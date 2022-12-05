@@ -34,8 +34,10 @@ if($result["callback_query"]){
 
 		if ($action=='info') {
 			$img = Main::getImageById($id);
-			$info = unserialize($img['INFO']);
-			$info = $img['INFO'];
+			$arInfo = unserialize($img['INFO']);
+//			$info = $img['INFO'];
+
+            $info = "Ссылка на этот контент /sendpic".$id."\n".$arInfo['title']."\nСсылка на оригинал ".$arInfo['link']."\nСсылка на сайт ".$arInfo['image']['contextLink'];
 			$telegram->answerCallbackQuery([
 					'callback_query_id' => $result["callback_query"]['id'],
 					'text' 			=> 'Отправить в группе /sendpic '.$id,
@@ -84,7 +86,7 @@ $double_commands=explode(" ", $text);
 
 if($text){
 	Main::User($result["message"]["from"]); //сохраняем пользователя
-	
+
 
 	if ($text == "/start" || $text == "/start@tigif_bot") {
 		$reply = "Привет ".$name." добро пожаловать в бота!";
@@ -107,9 +109,9 @@ if($text){
 	}
 	elseif ($text == "/statistic" || $text == "/statistic@tigif_bot") {
 		$stat = Main::getFullStatistic();
-		$telegram->sendPhoto([ 
+		$telegram->sendPhoto([
 			'chat_id' => $chat_id,
-			'photo'=> 'https://sasha23.tmweb.ru/assets/diagramm.php?gif='.$stat[0].'&pic='.$stat[1], 
+			'photo'=> 'https://sasha23.tmweb.ru/assets/diagramm.php?gif='.$stat[0].'&pic='.$stat[1],
 			'caption' => "
 				Всего: ".$stat[2]."\n
 				💛 GIF: ".$stat[0]."
@@ -142,7 +144,7 @@ if($text){
 		elseif ($text == '/ngif') {
 			$img = Main::getSingleImageNEW("gif");
 		}
-		
+
 
 		$pic_id = $img['ID'];
 		$from = $result["message"]["from"]['id'];
@@ -188,7 +190,7 @@ if($text){
 		}
 	}
 
-    
+
 	//Добавление материала
 	/*elseif ($double_commands[0] == '/addgif') {
 		$add = Main::addImage('gif', trim($double_commands[1]));
