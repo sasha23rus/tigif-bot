@@ -35,9 +35,11 @@ if($result["callback_query"]){
 		if ($action=='info') {
 			$img = Main::getImageById($id);
 			$arInfo = unserialize($img['INFO']);
-//			$info = $img['INFO'];
 
-            $info = "Ссылка на этот контент /sendpic".$id."\n".$arInfo['title']."\nСсылка на оригинал ".$arInfo['link']."\nСсылка на сайт ".$arInfo['image']['contextLink'];
+            $info = "Ссылка на этот контент /sendpic".$id;
+            if ($arInfo['title'])   $info .= "\n".$arInfo['title'];
+            if ($arInfo['link'])    $info .= "\nСсылка на оригинал ".$arInfo['link'];
+            if ($arInfo['image']['contextLink']) $info .= "\nСсылка на сайт ".$arInfo['image']['contextLink'];
 			$telegram->answerCallbackQuery([
 					'callback_query_id' => $result["callback_query"]['id'],
 					'text' 			=> 'Отправить в группе /sendpic '.$id,
@@ -232,9 +234,7 @@ if($text){
 			]);
 		}
 	}
-	else{
-		//$reply = "none";
-	}
+
 
 
 
