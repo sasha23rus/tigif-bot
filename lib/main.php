@@ -74,7 +74,7 @@ class Main{
 		return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` ="?s" ORDER BY RAND() LIMIT 1', strtoupper($type))->fetchAssoc();
 	}
 	public static function DBrandomContent(){
-		return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 ORDER BY RAND() LIMIT 1')->fetchAssoc();
+		return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` != "MOV" ORDER BY RAND() LIMIT 1')->fetchAssoc();
 	}
 
 	public static function addImage($type, $url, $info = ''){
@@ -87,9 +87,9 @@ class Main{
 			if ($info)
 				$data['INFO'] = serialize($info);
 
-            Main::DB()->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
-	    	//return $db->getAffectedRows();
-            return 1;
+            $res = Main::DB();
+            $res->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
+	    	return $res->getLastInsertId();
 		}
 	}
 
@@ -151,13 +151,7 @@ class Main{
 	}
 
 	public static function setImageFileID($id, $fid){
-		$db = Mysql::create("localhost", "sasha23_tibot", "ssU6p9jM")
-	      ->setErrorMessagesLang('ru')
-	      ->setDatabaseName("sasha23_tibot")
-	      ->setCharset("utf8")
-	      ->setStoreQueries(false);
-
-	    $db->query('UPDATE `GIF_TABLE` SET FILE_ID = "?s" WHERE ID = "?i"', $fid, $id);
+	    Main::DB()->query('UPDATE `GIF_TABLE` SET FILE_ID = "?s" WHERE ID = "?i"', $fid, $id);
 	}
 
 	public static function setReiting($id, $from, $action, $file)
@@ -237,13 +231,7 @@ class Main{
 
 	public static function setViewCount($id)
 	{
-		$db = Mysql::create("localhost", "sasha23_tibot", "ssU6p9jM")
-	      ->setErrorMessagesLang('ru')
-	      ->setDatabaseName("sasha23_tibot")
-	      ->setCharset("utf8")
-	      ->setStoreQueries(false);
-
-		$db->query('UPDATE `GIF_TABLE` SET `COUNT` = COUNT + 1 WHERE `ID` = "?i"', $id);
+		Main::DB()->query('UPDATE `GIF_TABLE` SET `COUNT` = COUNT + 1 WHERE `ID` = "?i"', $id);
 	}
 
 

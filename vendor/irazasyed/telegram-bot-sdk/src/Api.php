@@ -551,7 +551,7 @@ class Api
 
         return new MessageObject($response->getDecodedBody());
     }
-    
+
     /**
      * Send voice audio files.
      *
@@ -1091,7 +1091,7 @@ class Api
      *
      * @return Message
      */
-    protected function uploadFile($endpoint, array $params = [])
+    public function uploadFile($endpoint, array $params = [])
     {
         $i = 0;
         $multipart_params = [];
