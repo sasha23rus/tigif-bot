@@ -6,6 +6,7 @@ foreach (glob( "vendor/krugozor/database/src/*.php") as $filename) {
 include_once('lib/main.php');
 
 use Telegram\Bot\Api;
+use Telegram\Bot\Tests;
 use Lib\Main;
 
 $telegram = new Api('5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE', true);
@@ -164,11 +165,27 @@ if($text){
 			]);
 		}
 		elseif ($text == "/pic" || $text == "/pic@tigif_bot" ){
-			$response = $telegram->sendPhoto([
+			$response = $telegram->setAsyncRequest(false)->sendPhoto([
 				'chat_id' 	=> $chat_id,
 				'photo'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
 				'reply_markup' => json_encode($inlineKeyboardMarkup)
 			]);
+
+            //$test = new setup();
+            //$xxx = $telegram->getCallbackQuery()->getMessageId();
+            //$ans = json_encode($response);
+            $ans = $response["photo"][0]['file_id'];
+            if (!$img['FILE_ID']) {
+                //Работает в ans приходит file_id
+                $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "new id " . $ans]);
+                if ($ans) {
+                    Main::setImageFileID($pic_id, $ans);
+                }
+            }
+            if (!$img['FILE_ID'] && !$ans){
+                $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . $img['URL']." id ".$pic_id]);
+            }
+
 		}
 
 	}
@@ -211,7 +228,8 @@ if($text){
 		}
 	}*/
 	elseif ($double_commands[0] == '/sendpic') {
-		$img = Main::getImageById($double_commands[1]);
+        $id = intval($double_commands[1]);
+		$img = Main::getImageById($id);
 		$pic_id = $img['ID'];
 		$from = $result["message"]["from"]['id'];
 
@@ -227,11 +245,19 @@ if($text){
 				'reply_markup' 	=> json_encode($inlineKeyboardMarkup)
 			]);
 		}else{
-			$telegram->sendPhoto([
+			$response = $telegram->setAsyncRequest(false)->sendPhoto([
 				'chat_id' 	=> $chat_id,
 				'photo'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
 				'reply_markup' => json_encode($inlineKeyboardMarkup)
 			]);
+            if (!$img['FILE_ID']){
+                $ans = $response["photo"][0]['file_id'];
+                //Работает в ans приходит file_id
+                $telegram->sendMessage([ 'chat_id' => '153057273', 'parse_mode'=> 'HTML', 'text' => "ans ".$ans]);
+                if ($ans){
+                    Main::setImageFileID($pic_id, $ans);
+                }
+            }
 		}
 	}
 
