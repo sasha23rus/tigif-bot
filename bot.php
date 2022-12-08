@@ -75,13 +75,12 @@ if($result["callback_query"]){
 
         // $telegram->sendMessage([ 'chat_id' => '153057273', 'parse_mode'=> 'HTML', 'text' => "file_id ".json_encode($result['callback_query']) ]);
 	}
-
 }
 
 
 
 $keyboard = [
-	["/gif", "/pic", "/start", "/help"]
+	["/gif", "/pic", "/rdm", "/game", "/help", '/X']
 ];
 
 $double_commands=explode(" ", $text);
@@ -93,21 +92,24 @@ if($text){
 
 	if ($text == "/start" || $text == "/start@tigif_bot") {
 		$reply = "Привет ".$name." добро пожаловать в бота!";
-		$reply_markup = $telegram->replyKeyboardMarkup([ 'keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => true, "selective"=>false, "single_use"=>true ]);
+		$reply_markup = $telegram->replyKeyboardMarkup([ 'keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false, "selective"=>false, "single_use"=>true ]);
 	}
 	elseif ($text == "/help" || $text == "/help@tigif_bot") {
-		$reply = "
-		/start - обновить бота\n
-		/help - помощь\n
-		/gif - получить гифку\n
-		/pic - получить картинку\n
-		/addgif ССЫЛКА - добавить в бота gif\n
-		/addpic ССЫЛКА - добавить в бота pic\n
-		/statistic - Статистика\n
-		/tipost - #Сиськопост\n
-		/sendpic ID - показать картинку/гифку по id\n
-		/ngif  - только новые гифки\n
+		$reply = "\n
+		/start - обновить бота
+		/help - помощь
+		/gif - получить гифку
+		/pic - получить картинку
+		/ngif  - только новые гифки
+		/npic  - только новые картинки
+		/rdm - случайно картинка или гифка
+		/addgif ССЫЛКА - добавить в бота gif
+		/addpic ССЫЛКА - добавить в бота pic
+		/statistic - Статистика
+		/tipost - #Сиськопост
+		/sendpic ID - показать картинку/гифку по id
 		/game - пошлая цитата
+		/X - скрыть клавиатуру чтобы она снова отобразилась нажмите /start
 		";
 	}
 	elseif ($text == "/statistic" || $text == "/statistic@tigif_bot") {
@@ -132,62 +134,15 @@ if($text){
 				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?$img['FILE_ID']:$img['URL']);
 			}
 		}
-		$telegram->sendmediagroup([
-				'chat_id' 	=> $chat_id,
-				'media'		=> json_encode($images)
-			]);
+		$telegram->sendmediagroup(['chat_id' => $chat_id, 'media' => json_encode($images)]);
 	}
-	elseif ($text == "/gif" || $text == "/gif@tigif_bot" || $text == "/pic@tigif_bot" || $text == "/pic" || $text == '/ngif') {
-		if ($text == "/gif" || $text == "/gif@tigif_bot" ) {
-			$img = Main::getSingleImage("gif");
-		}
-		elseif ($text == "/pic" || $text == "/pic@tigif_bot" ){
-			$img = Main::getSingleImage("pic");
-		}
-		elseif ($text == '/ngif') {
-			$img = Main::getSingleImageNEW("gif");
-		}
+	elseif ($text == "/gif" || $text == "/gif@tigif_bot" || $text == "/pic@tigif_bot" || $text == "/pic" || $text == '/ngif' || $text == '/npic') {
+		if     ($text == "/gif" || $text == "/gif@tigif_bot" ) {$img = Main::getSingleImage("gif");}
+		elseif ($text == "/pic" || $text == "/pic@tigif_bot" ){$img = Main::getSingleImage("pic");}
+		elseif ($text == '/ngif') {$img = Main::getSingleImageNEW("gif");}
+        elseif ($text == '/npic') {$img = Main::getSingleImageNEW("pic");}
 
-
-		$pic_id = $img['ID'];
-		$from = $result["message"]["from"]['id'];
-
-		$keyboard = Main::reitingBtns($pic_id, $from);
-	    $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
-
-		Main::setViewCount($pic_id);
-
-		if ($text == "/gif" || $text == "/gif@tigif_bot" || $text == '/ngif' ) {
-			$response = $telegram->sendAnimation([
-				'chat_id' 		=> $chat_id,
-				'animation'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
-				'reply_markup' 	=> json_encode($inlineKeyboardMarkup)
-			]);
-		}
-		elseif ($text == "/pic" || $text == "/pic@tigif_bot" ){
-			$response = $telegram->setAsyncRequest(false)->sendPhoto([
-				'chat_id' 	=> $chat_id,
-				'photo'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
-				'reply_markup' => json_encode($inlineKeyboardMarkup)
-			]);
-
-            //$test = new setup();
-            //$xxx = $telegram->getCallbackQuery()->getMessageId();
-            //$ans = json_encode($response);
-            $ans = $response["photo"][0]['file_id'];
-            if (!$img['FILE_ID']) {
-                //Работает в ans приходит file_id
-                $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "new id " . $ans]);
-                if ($ans) {
-                    Main::setImageFileID($pic_id, $ans);
-                }
-            }
-            if (!$img['FILE_ID'] && !$ans){
-                $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . $img['URL']." id ".$pic_id]);
-            }
-
-		}
-
+		getIMG_send($telegram, $chat_id, $img);
 	}
 	elseif ($text == "/game" || $text == "/game@tigif_bot"){
 		$img = Main::DBrandomContent();
@@ -201,6 +156,7 @@ if($text){
 				'caption'		=> $caption,
 			]);
 		}else{
+            //sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption);
 			$telegram->sendPhoto([
 				'chat_id' 	=> $chat_id,
 				'photo'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
@@ -208,6 +164,24 @@ if($text){
 			]);
 		}
 	}
+    elseif ( $text == '/rdm' ){
+        $r = rand(0,1);
+
+        switch ($r){
+            case 0:
+                gif($telegram, $chat_id);
+                break;
+            case 1:
+                pic($telegram, $chat_id);
+                break;
+        }
+
+    }
+    elseif ( $text == '/X' ){
+        $reply_markup = json_encode(['remove_keyboard' => true]);
+        $arAns = [ 'chat_id' => $chat_id, 'text' => 'Кнопки отключены', 'reply_markup' => $reply_markup ];
+		$telegram->sendMessage($arAns);
+    }
 
 
 	//Добавление материала
@@ -230,39 +204,8 @@ if($text){
 	elseif ($double_commands[0] == '/sendpic') {
         $id = intval($double_commands[1]);
 		$img = Main::getImageById($id);
-		$pic_id = $img['ID'];
-		$from = $result["message"]["from"]['id'];
-
-		$keyboard = Main::reitingBtns($pic_id, $from);
-	    $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
-
-	    Main::setViewCount($pic_id);
-
-		if ($img['TYPE'] == "GIF") {
-			$telegram->sendAnimation([
-				'chat_id' 		=> $chat_id,
-				'animation'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
-				'reply_markup' 	=> json_encode($inlineKeyboardMarkup)
-			]);
-		}else{
-			$response = $telegram->setAsyncRequest(false)->sendPhoto([
-				'chat_id' 	=> $chat_id,
-				'photo'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
-				'reply_markup' => json_encode($inlineKeyboardMarkup)
-			]);
-            if (!$img['FILE_ID']){
-                $ans = $response["photo"][0]['file_id'];
-                //Работает в ans приходит file_id
-                $telegram->sendMessage([ 'chat_id' => '153057273', 'parse_mode'=> 'HTML', 'text' => "ans ".$ans]);
-                if ($ans){
-                    Main::setImageFileID($pic_id, $ans);
-                }
-            }
-		}
+		getIMG_send($telegram, $chat_id, $img);
 	}
-
-
-
 
 	//обычные ответы
 	if ($reply) {
@@ -270,7 +213,89 @@ if($text){
 		if ($reply_markup) $arAns['reply_markup']=$reply_markup;
 		$telegram->sendMessage($arAns);
 	}
-
-
 }
 
+function gif($telegram, $chat_id){
+    $img = Main::getSingleImage("gif");
+    getIMG_send($telegram, $chat_id, $img);
+}
+function pic($telegram, $chat_id){
+    $img = Main::getSingleImage("pic");
+    getIMG_send($telegram, $chat_id, $img);
+}
+function ngif($telegram, $chat_id){
+    $img = Main::getSingleImageNEW("gif");
+    getIMG_send($telegram, $chat_id, $img);
+}
+function npic($telegram, $chat_id){
+    $img = Main::getSingleImageNEW("pic");
+    getIMG_send($telegram, $chat_id, $img);
+}
+
+function getIMG_send($telegram, $chat_id, $img){
+    $pic_id = $img['ID'];
+    $result = $telegram->getWebhookUpdates();
+    $from = $result["message"]["from"]['id'];
+
+	$keyboard = Main::reitingBtns($pic_id, $from);
+	$inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
+
+	if ($img['TYPE'] == "GIF") { sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id); }
+    if ($img['TYPE'] == "PIC") { sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id); }
+    //if ($img['TYPE'] == "MOV") { /*senmov*/ }
+}
+
+function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''){
+    if (!$img){
+        $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
+        return;
+    }
+//    $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "открыть " . $img." id ".$pic_id]);
+    $response = $telegram->setAsyncRequest(false)->sendAnimation([
+		'chat_id' 	=> $chat_id,
+		'animation'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
+        'caption'   =>$caption,
+		'reply_markup' => json_encode($inlineKeyboardMarkup)
+	]);
+    $ans = var_dump($response, true);
+    $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "new idgif " . $ans]);
+    Main::setViewCount($pic_id);
+    $ans = $response["photo"][0]['file_id'];
+    if (!$img['FILE_ID']) {
+         $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "new idgif " . $ans]);
+         if ($ans) Main::setImageFileID($pic_id, $ans);
+    }
+
+    if (!$img['FILE_ID'] && !$ans){
+         $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . $img['URL']." id ".$pic_id]);
+    }
+    //if ($ans) Main::setViewCount($pic_id);
+}
+
+function sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''){
+    if (!$img){
+        $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
+        return;
+    }
+    /*if (!$img['FILE_ID']){
+        //Main::setDeactive($pic_id);
+        $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Ошибка :("]);
+    }*/
+    $response = $telegram->setAsyncRequest(false)->sendPhoto([
+		'chat_id' 	=> $chat_id,
+		'photo'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
+        'caption'   =>$caption,
+		'reply_markup' => json_encode($inlineKeyboardMarkup)
+	]);
+
+    $ans = $response["photo"][0]['file_id'];
+    if (!$img['FILE_ID']) {
+         if ($ans) Main::setImageFileID($pic_id, $ans);
+    }
+
+    if (!$img['FILE_ID'] && !$ans){
+         $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . $img['URL']." id ".$pic_id]);
+    }
+
+    if ($ans) Main::setViewCount($pic_id);
+}

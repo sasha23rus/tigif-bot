@@ -162,11 +162,7 @@ class Main{
 
 	public static function setReiting($id, $from, $action, $file)
 	{
-		$db = Mysql::create("localhost", "sasha23_tibot", "ssU6p9jM")
-	      ->setErrorMessagesLang('ru')
-	      ->setDatabaseName("sasha23_tibot")
-	      ->setCharset("utf8")
-	      ->setStoreQueries(false);
+		$db = Main::DB();
 
 		$data = array(
 			'ID_PIC' => $id,
@@ -203,15 +199,12 @@ class Main{
 
     	return $db->getAffectedRows();
 	}
+    public static function setDeactive($id){
+        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "0" WHERE ID = "?i"', $id);
+    }
 
 	public static function getReiting($id, $action){
-		$db = Mysql::create("localhost", "sasha23_tibot", "ssU6p9jM")
-	      ->setErrorMessagesLang('ru')
-	      ->setDatabaseName("sasha23_tibot")
-	      ->setCharset("utf8")
-	      ->setStoreQueries(false);
-
-	    $result = $db->query('SELECT * FROM `RAITING` where `ID_PIC` = "?i" AND `ACTION` = "?s"', $id, $action);
+	    $result = Main::DB()->query('SELECT * FROM `RAITING` where `ID_PIC` = "?i" AND `ACTION` = "?s"', $id, $action);
 	    $res = intval($result->getNumRows());
 
 	    return $res;
