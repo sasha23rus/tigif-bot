@@ -17,26 +17,28 @@ class Main{
 		      ->setErrorMessagesLang('ru')
 		      ->setDatabaseName("sasha23_tibot")
 		      ->setCharset("utf8")
-		      ->setStoreQueries(false);	    
+		      ->setStoreQueries(false);
 	}
 
 	/**
-	 * 
+	 *
 	 * GOOGLE
-	 * 
+	 *
 	 */
-	public static function getImage($type='', $start = 0){
-		$imgType = (!$type || $type=='pic')?'photo':'animated';
-		$q = ($type=='gif')?'Лучшие сиськи Gifs':'Голые красотки обои';
+	public static function getImage($query, $type, $start = 0){
+		$imgType = ($type=='pic')?'photo':'animated';
+        /*if (!$q){
+		    $q = ($type=='gif')?'Лучшие сиськи Gifs':'Голые красотки обои';
+        }*/
 		$queryParams = [
 		    'cx' 	=> '278b988d6545e4b27',
 		    'imgType' => $imgType,
-		    'q'		=> $q,
-		    'safe'	=> 'off',
+		    'q'		=> $query,
+		    'safe'	=> 'active',
 		    'searchType'=> 'image',
 		    'sort'	=> 'date:d',
 		    'key' 	=> 'AIzaSyDFNyTrlssWgzHFXyTVc7vArsa9lj3DC4o',
-		    'excludeTerms'=>'мем, акция, купить, песня, домашнее, член, смешные, ебется, joyreactor, вибратор, пожелание, SEX.COM',
+		    'excludeTerms'=>'мем, акция, купить, песня, домашнее, член, смешные, ебется, joyreactor, вибратор, пожелание, SEX.COM, Шмель, shemale',
 		    'start'	=> ($start>0)?$start*10:0
 		];
 		$url = 'https://customsearch.googleapis.com/customsearch/v1?'.http_build_query($queryParams);
@@ -51,8 +53,11 @@ class Main{
 		curl_setopt($curl, CURLOPT_URL, $url);
 
 		$result = curl_exec($curl);
-		$json = json_decode($result, true);
 
+		$json = json_decode($result, true);
+        echo "<hr>";
+        var_dump($query);
+        echo "<hr>";
 		return $json;
 	}
 
@@ -72,19 +77,21 @@ class Main{
 		return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 ORDER BY RAND() LIMIT 1')->fetchAssoc();
 	}
 
-	/*public static function addImage($type, $url, $info = ''){
+	public static function addImage($type, $url, $info = ''){
 		if (!self::checkIMGinBase($url) > 0) {
 			$data = array(
 				'ACTIVE' => 1,
 				'URL' => $url,
 				'TYPE' => strtoupper($type)
 			);
-			if ($info) 
+			if ($info)
 				$data['INFO'] = serialize($info);
 
-	    	return Main::DB()->query('INSERT INTO `GIF_TABLE` SET ?As', $data)->getAffectedRows();
+            Main::DB()->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
+	    	//return $db->getAffectedRows();
+            return 1;
 		}
-	}*/
+	}
 
 	public static function getFullStatistic(){
 		$gif = Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` = "GIF"');
@@ -178,7 +185,7 @@ class Main{
     	if ($action=='ban') {
     		$count--;
     		$db->query('UPDATE `GIF_TABLE` SET RAITING = "?i" WHERE ID = "?i"', $count, $id);
-    		if(self::getReiting($id, $action) > 5){
+    		if(self::getReiting($id, $action) > 2){
 	    		$db->query('UPDATE `GIF_TABLE` SET ACTIVE = "0" WHERE ID = "?i"', $id);
     		}
     	}
@@ -210,9 +217,9 @@ class Main{
 	    return $res;
 	}
 
-	/*public static function checkIMGinBase($url){
+	public static function checkIMGinBase($url){
 	    return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `URL` = "?s" LIMIT 1', $url)->getNumRows();
-	}*/
+	}
 
 	public static function getRandImages($count = '5')
 	{
@@ -248,9 +255,9 @@ class Main{
 
 
 	/**
-	 * 
+	 *
 	 * Работа с пользователем
-	 * 
+	 *
 	 */
 	public static function User($array)
 	{
@@ -283,16 +290,16 @@ class Main{
 	}
 
 	/**
-	 * 
+	 *
 	 * Работа с сообщениями
-	 * 
+	 *
 	 */
 
 
 	 /**
-	  * 
+	  *
 	  * Экспериментальный блок
-	  * 
+	  *
 	  */
 
 	public static function addGameText($text)
@@ -301,9 +308,9 @@ class Main{
 	}
 
 	/**
-	 * 
+	 *
 	 * Игра
-	 * 
+	 *
 	 */
 
 	public static function getGameText()
@@ -360,9 +367,9 @@ class Site
 					    <div class="col"></div>
 					    <div class="col">
 							<div class="container d-flex h-100 p-3 mx-auto flex-column">
-					
+
 				<?php endif ?>
-				
+
 		<?
 	}
 
@@ -374,7 +381,7 @@ class Site
 					    <div class="col"></div>
 					  </div>
 					</div>
-					
+
 				<?php endif ?>
 
 				<footer class="mastfoot mt-auto">

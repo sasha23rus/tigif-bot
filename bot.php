@@ -36,7 +36,7 @@ if($result["callback_query"]){
 			$img = Main::getImageById($id);
 			$arInfo = unserialize($img['INFO']);
 
-            $info = "Ссылка на этот контент /sendpic".$id;
+            $info = "Ссылка на этот контент /sendpic ".$id;
             if ($arInfo['title'])   $info .= "\n".$arInfo['title'];
             if ($arInfo['link'])    $info .= "\nСсылка на оригинал ".$arInfo['link'];
             if ($arInfo['image']['contextLink']) $info .= "\nСсылка на сайт ".$arInfo['image']['contextLink'];
