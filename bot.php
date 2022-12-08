@@ -26,6 +26,9 @@ if($result["callback_query"]){
 		$file = $result["callback_query"]['message']['photo'];
 		if (!is_array($file)) {
 			$file_id = $result["callback_query"]['message']['animation']['file_id'];
+		}
+        if (!is_array($file)) {
+			$file_id = $result["callback_query"]['message']['video']['file_id'];
 		}else{
 			$file_id = $file[0]['file_id'];
 		}
@@ -111,11 +114,12 @@ if($text){
 		$stat = Main::getFullStatistic();
 		$telegram->sendPhoto([
 			'chat_id' => $chat_id,
-			'photo'=> 'https://sasha23.tmweb.ru/assets/diagramm.php?gif='.$stat[0].'&pic='.$stat[1],
+			'photo'=> 'https://sasha23.tmweb.ru/assets/diagramm.php?gif='.$stat[0].'&pic='.$stat[1].'&mov='.$stat[2],
 			'caption' => "
-				Всего: ".$stat[2]."\n
+				Всего: ".$stat[3]."\n
 				💛 GIF: ".$stat[0]."
-				💜 PIC: ".$stat[1]."\n
+				💜 PIC: ".$stat[1]."
+				❤️ MOV: ".$stat[2]."\n
 				Пользователей: ".Main::FindAllUsers()
 		]);
 	}
@@ -297,4 +301,14 @@ function sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
         'caption'   =>$caption,
 		'reply_markup' => json_encode($inlineKeyboardMarkup)
 	]);
+    $ans = $response["video"]['file_id'];
+    if (!$img['FILE_ID']) {
+         if ($ans) Main::setImageFileID($pic_id, $ans);
+    }
+
+    /*if (!$img['FILE_ID'] && !$ans){
+         $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . $img['URL']." id ".$pic_id]);
+    }*/
+
+    if ($ans) Main::setViewCount($pic_id);
 }

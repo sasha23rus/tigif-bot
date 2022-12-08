@@ -2,6 +2,6 @@
 include_once('../lib/dia.php');
 use Diagram\dia;
 $instance = new dia();
-$data=array('FF33D1'=>intval($_GET['pic']), 'FFC133'=>intval($_GET['gif']));
+$data=array('FFC133'=>intval($_GET['gif']), 'FF33D1'=>intval($_GET['pic']), '8B0000' => intval($_GET['mov']) );
 $instance->generate($data);
 ?>

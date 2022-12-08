@@ -98,8 +98,10 @@ class Main{
     	$gif_row = intval($gif->getNumRows());
     	$pic = Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` = "PIC"');
     	$pic_row = intval($pic->getNumRows());
+        $mov = Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` = "MOV"');
+    	$mov_row = intval($mov->getNumRows());
 
-    	return array($gif_row, $pic_row, ($gif_row + $pic_row));
+    	return array($gif_row, $pic_row, $mov_row, ($gif_row + $pic_row));
 	}
 
 	public static function diagramm($gif, $pic){
