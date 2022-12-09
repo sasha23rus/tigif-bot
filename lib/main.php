@@ -147,6 +147,22 @@ class Main{
 
 	    return $keyboard;
 	}
+    public static function afterReitingBtns($pic_id, $from){
+		$reitLIKE = intval(self::getReiting($pic_id, 'like'));
+		$reitDIS  = intval(self::getReiting($pic_id, 'dislike'));
+		$reitBAN  = intval(self::getReiting($pic_id, 'ban'));
+		$keyboard = array(
+	        array(
+	            array(
+	          	    'text' => '#'.$pic_id,
+	          	    'callback_data' => self::setReitingBtn($pic_id, $from, 'info')
+	            ),
+	            array('text' => '👎 '.$reitDIS.' 🚫'.$reitBAN.'👍 '.$reitLIKE,'callback_data' => self::setReitingBtn($pic_id, $from, 'block')),
+	        )
+	    );
+
+	    return $keyboard;
+	}
 
 	public static function getImageById($id){
 	    return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ID` = "?s" LIMIT 1', $id)->fetchAssoc();
@@ -156,6 +172,10 @@ class Main{
 	    Main::DB()->query('UPDATE `GIF_TABLE` SET FILE_ID = "?s" WHERE ID = "?i"', $fid, $id);
 	}
 
+    public static function CheckReiting($id, $from){
+        $db = Main::DB();
+        return $db->query('SELECT `ID` FROM `RAITING` WHERE `ID_PIC` = "?i" AND `USER_ID` = "?i" LIMIT 1', $id, $from)->fetchRow()[0];
+    }
 	public static function setReiting($id, $from, $action, $file)
 	{
 		$db = Main::DB();
@@ -330,7 +350,7 @@ class Site
 				<div class="container text-center">
 				  <div class="row align-items-start">
 				    <div class="col">
-				      <h3 class="">TiBot @tigif_bot</h3>
+				      <h3 class=""><a href="/">TiBot @tigif_bot</a></h3>
 				    </div>
 				    <div class="col">
 				     	<nav class="nav nav-masthead justify-content-center">

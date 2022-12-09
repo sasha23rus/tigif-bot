@@ -10,5 +10,5 @@ use Lib\Main;
 
 $type = 'pic';
 $url = 'http://i.imgur.com/8GsnJBX.jpg';
-$x = new SplFileInfo($url);
-var_dump($x->getExtension());
+
+var_dump(Main::CheckReiting(2946, 363661763));

@@ -32,48 +32,70 @@ if($result["callback_query"]){
 		}else{
 			$file_id = $file[0]['file_id'];
 		}
-		Main::setReiting($id, $from, $action, $file_id);
 
+        //проверка, голосовал ли пользователь
+		if(Main::CheckReiting($id, $from) > 0){
 
-		if ($action=='info') {
-			$img = Main::getImageById($id);
-			$arInfo = unserialize($img['INFO']);
-
-            $info = "Ссылка на этот контент /sendpic ".$id;
-            if ($arInfo['title'])   $info .= "\n".$arInfo['title'];
-            if ($arInfo['link'])    $info .= "\nСсылка на оригинал ".$arInfo['link'];
-            if ($arInfo['image']['contextLink']) $info .= "\nСсылка на сайт ".$arInfo['image']['contextLink'];
-			$telegram->answerCallbackQuery([
-					'callback_query_id' => $result["callback_query"]['id'],
-					'text' 			=> 'Отправить в группе /sendpic '.$id,
-					'show_alert' 	=> false,
-					'cache_time' 	=> 1
-				]);
-			$telegram->sendMessage([
-				'chat_id' => $result['callback_query']['message']['chat']['id'],
-				'parse_mode'=> 'HTML',
-				'disable_web_page_preview'=> true,
-				'disable_notification' => true,
-				'text' => "INFO:\n".$info
-			]);
-		}else{
-			//всплывающее сообщение
-			$telegram->answerCallbackQuery([
-					'callback_query_id' => $result["callback_query"]['id'],
-					'text' 			=> 'Ok 👌',
-					'show_alert' 	=> false,
-					'cache_time' 	=> 1
-				]);
-
-			//новые кнопки
-	    	$keyboard = Main::reitingBtns($id, $from);
+            $keyboard = Main::afterReitingBtns($id, $from);
 			$inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
 			$telegram->editMessageReplyMarkup([
 		        'chat_id' => $result['callback_query']['message']['chat']['id'],
 		        'message_id' => $result['callback_query']['message']['message_id'],
 		        'reply_markup' => json_encode($inlineKeyboardMarkup),
 	        ]);
-		}
+        }else{
+            Main::setReiting($id, $from, $action, $file_id);
+            if ($action=='info') {
+                $img = Main::getImageById($id);
+                $arInfo = unserialize($img['INFO']);
+
+                $info = "Ссылка на этот контент /sendpic ".$id;
+                if ($arInfo['title'])   $info .= "\n".$arInfo['title'];
+                if ($arInfo['link'])    $info .= "\nСсылка на оригинал ".$arInfo['link'];
+                if ($arInfo['image']['contextLink']) $info .= "\nСсылка на сайт ".$arInfo['image']['contextLink'];
+                $telegram->answerCallbackQuery([
+                    'callback_query_id' => $result["callback_query"]['id'],
+                    'text' 			=> 'Отправить в группе /sendpic '.$id,
+                    'show_alert' 	=> false,
+                    'cache_time' 	=> 1
+                ]);
+                $telegram->sendMessage([
+                    'chat_id' => $result['callback_query']['message']['chat']['id'],
+                    'parse_mode'=> 'HTML',
+                    'disable_web_page_preview'=> true,
+                    'disable_notification' => true,
+                    'text' => "INFO:\n".$info
+                ]);
+            }else{
+                //всплывающее сообщение
+                $telegram->answerCallbackQuery([
+                    'callback_query_id' => $result["callback_query"]['id'],
+                    'text' 			=> 'Ok 👌',
+                    'show_alert' 	=> false,
+                    'cache_time' 	=> 1
+                ]);
+
+                //новые кнопки
+                $keyboard = Main::afterReitingBtns($id, $from);
+                $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
+                $telegram->editMessageReplyMarkup([
+                    'chat_id' => $result['callback_query']['message']['chat']['id'],
+                    'message_id' => $result['callback_query']['message']['message_id'],
+                    'reply_markup' => json_encode($inlineKeyboardMarkup),
+                ]);
+            }
+        }
+
+        if ($action=='block'){
+            $telegram->answerCallbackQuery([
+                    'callback_query_id' => $result["callback_query"]['id'],
+                    'text' 			=> 'Уже проголосовал',
+                    'show_alert' 	=> false,
+                    'cache_time' 	=> 1
+                ]);
+        }
+
+
 
         // $telegram->sendMessage([ 'chat_id' => '153057273', 'parse_mode'=> 'HTML', 'text' => "file_id ".json_encode($result['callback_query']) ]);
 	}
@@ -172,7 +194,7 @@ if($text){
         $validUrl = filter_var($double_commands[1], FILTER_VALIDATE_URL);
         if ($validUrl){
             $fileInfo = new SplFileInfo($validUrl);
-            if ($fileInfo->getExtension() == 'giv'){ $type = 'gif'; }
+            if ($fileInfo->getExtension() == 'gif'){ $type = 'gif'; }
             elseif (
                 $fileInfo->getExtension() == 'jpg'  ||
                 $fileInfo->getExtension() == 'jpeg' ||
