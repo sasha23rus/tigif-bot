@@ -45,28 +45,7 @@ if($result["callback_query"]){
 	        ]);
         }else{
             Main::setReiting($id, $from, $action, $file_id);
-            if ($action=='info') {
-                $img = Main::getImageById($id);
-                $arInfo = unserialize($img['INFO']);
-
-                $info = "Ссылка на этот контент /sendpic ".$id;
-                if ($arInfo['title'])   $info .= "\n".$arInfo['title'];
-                if ($arInfo['link'])    $info .= "\nСсылка на оригинал ".$arInfo['link'];
-                if ($arInfo['image']['contextLink']) $info .= "\nСсылка на сайт ".$arInfo['image']['contextLink'];
-                $telegram->answerCallbackQuery([
-                    'callback_query_id' => $result["callback_query"]['id'],
-                    'text' 			=> 'Отправить в группе /sendpic '.$id,
-                    'show_alert' 	=> false,
-                    'cache_time' 	=> 1
-                ]);
-                $telegram->sendMessage([
-                    'chat_id' => $result['callback_query']['message']['chat']['id'],
-                    'parse_mode'=> 'HTML',
-                    'disable_web_page_preview'=> true,
-                    'disable_notification' => true,
-                    'text' => "INFO:\n".$info
-                ]);
-            }else{
+            if ($action!='info') {
                 //всплывающее сообщение
                 $telegram->answerCallbackQuery([
                     'callback_query_id' => $result["callback_query"]['id'],
@@ -84,6 +63,29 @@ if($result["callback_query"]){
                     'reply_markup' => json_encode($inlineKeyboardMarkup),
                 ]);
             }
+        }
+
+        if ($action=='info') {
+            $img = Main::getImageById($id);
+            $arInfo = unserialize($img['INFO']);
+
+            $info = "Ссылка на этот контент /sendpic ".$id;
+            if ($arInfo['title'])   $info .= "\n".$arInfo['title'];
+            if ($arInfo['link'])    $info .= "\nСсылка на оригинал ".$arInfo['link'];
+            if ($arInfo['image']['contextLink']) $info .= "\nСсылка на сайт ".$arInfo['image']['contextLink'];
+            $telegram->answerCallbackQuery([
+                'callback_query_id' => $result["callback_query"]['id'],
+                'text' 			=> 'Отправить в группе /sendpic '.$id,
+                'show_alert' 	=> false,
+                'cache_time' 	=> 1
+            ]);
+            $telegram->sendMessage([
+                'chat_id' => $result['callback_query']['message']['chat']['id'],
+                'parse_mode'=> 'HTML',
+                'disable_web_page_preview'=> true,
+                'disable_notification' => true,
+                'text' => "INFO:\n".$info
+            ]);
         }
 
         if ($action=='block'){
