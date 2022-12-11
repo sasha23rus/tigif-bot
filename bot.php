@@ -15,7 +15,19 @@ $text = $result["message"]["text"];
 $chat_id = $result["message"]["chat"]["id"];
 $name = $result["message"]["from"]["username"];
 
+/*if ($result){
+    $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "принял " . json_encode($result) ]);
+    $count = count($result['message']['photo'])-1;
+    $test = $telegram->setAsyncRequest(false)->getFile(['file_id' => $result['message']['photo'][$count]['file_id'] ]);
+    //Сохранить файл
+    $url = 'https://api.telegram.org/file/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/'.$test['file_path'];
+    $path = $_SERVER['DOCUMENT_ROOT'] . '/upload/'.$test['file_path'];
+    if(file_put_contents($path, file_get_contents($url))){
+        $telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
+    }
 
+    $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "getFile  " . json_encode($test) ]);
+}*/
 
 if($result["callback_query"]){
 	$callback_data = explode('|',$result["callback_query"]['data']);
@@ -252,7 +264,11 @@ function getIMG_send($telegram, $chat_id, $img){
     $result = $telegram->getWebhookUpdates();
     $from = $result["message"]["from"]['id'];
 
-	$keyboard = Main::reitingBtns($pic_id, $from);
+    if (Main::CheckReiting($pic_id, $from)){
+        $keyboard = Main::afterReitingBtns($pic_id, $from);
+    }else{
+	    $keyboard = Main::reitingBtns($pic_id, $from);
+    }
 	$inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
 
 	if ($img['TYPE'] == "GIF") { sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id); }
@@ -330,9 +346,11 @@ function sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
          if ($ans) Main::setImageFileID($pic_id, $ans);
     }
 
-    /*if (!$img['FILE_ID'] && !$ans){
-         $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . $img['URL']." id ".$pic_id]);
-    }*/
+    $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . json_encode($response) ]);
+
+    if (!$img['FILE_ID'] && !$ans){
+         $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . $img['URL'] ]);
+    }
 
     if ($ans) Main::setViewCount($pic_id);
 }
