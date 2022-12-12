@@ -185,7 +185,7 @@ class Main{
 			'USER_ID' => $from,
 			'ACTION' => $action
 		);
-    	$db->query('INSERT INTO `RAITING` SET ?As', $data);
+        if ($action!='info') $db->query('INSERT INTO `RAITING` SET ?As', $data);
 
 
     	$img = self::getImageById($id);
