@@ -7,13 +7,16 @@ include_once('lib/main.php');
 
 use Telegram\Bot\Api;
 use Lib\Main;
-
+//global $result;
 $telegram = new Api('5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE', true);
 
 $result = $telegram->getWebhookUpdates();
 $text = $result["message"]["text"];
 $chat_id = $result["message"]["chat"]["id"];
 $name = $result["message"]["from"]["username"];
+
+//$telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
+//die();
 
 /*if ($result){
     $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "принял " . json_encode($result) ]);
@@ -107,6 +110,10 @@ if($result["callback_query"]){
                     'show_alert' 	=> false,
                     'cache_time' 	=> 1
                 ]);
+        }
+
+        if ($action=='removenow'){
+            Main::setDeactive($id);
         }
 
 
@@ -269,6 +276,7 @@ function getIMG_send($telegram, $chat_id, $img){
     }else{
 	    $keyboard = Main::reitingBtns($pic_id, $from);
     }
+
 	$inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
 
 	if ($img['TYPE'] == "GIF") { sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id); }
@@ -277,6 +285,7 @@ function getIMG_send($telegram, $chat_id, $img){
 }
 
 function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''){
+    $result = $telegram->getWebhookUpdates();
     if (!$img){
         $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
         return;
@@ -306,6 +315,7 @@ function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
 }
 
 function sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''){
+    $result = $telegram->getWebhookUpdates();
     if (!$img){
         $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
         return;
@@ -318,8 +328,8 @@ function sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
 		'reply_markup' => json_encode($inlineKeyboardMarkup)
 	]);
 
-
-    $ans = $response["photo"][0]['file_id'];
+    $count = count($result['message']['photo'])-1;
+    $ans = $response["photo"][$count]['file_id'];
     if (!$img['FILE_ID']) {
          if ($ans) Main::setImageFileID($pic_id, $ans);
     }
@@ -331,6 +341,7 @@ function sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
     if ($ans) Main::setViewCount($pic_id);
 }
 function sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''){
+    $result = $telegram->getWebhookUpdates();
     if (!$img){
         $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
         return;
@@ -354,3 +365,19 @@ function sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
 
     if ($ans) Main::setViewCount($pic_id);
 }
+
+
+/*Примеры*/
+
+/**
+ * отправить сообщение
+ * https://api.telegram.org/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/sendMessage?chat_id=153057273&text=test
+ *
+ * отправить фотао
+ * https://api.telegram.org/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/sendPhoto?chat_id=153057273&photo=AgACAgIAAxkDAAIM22ORiiTKMv0M1xcGKK8YJ1s7C6a5AAJSwTEb9jmASKZGIPX7raXwAQADAgADcwADKwQ
+ *
+ * установить webhook
+ * https://api.telegram.org/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/setWebhook?url=ti-bot.ru/bot.php
+
+
+ */

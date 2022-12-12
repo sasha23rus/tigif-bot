@@ -123,6 +123,7 @@ class Main{
 		$reitLIKE = self::getReiting($pic_id, 'like');
 		$reitDIS = self::getReiting($pic_id, 'dislike');
 		$reitBAN = self::getReiting($pic_id, 'ban');
+
 		$keyboard = array(
 	        array(
 
@@ -138,12 +139,20 @@ class Main{
 	          	'text'=>($reitBAN>0)?' 🚫'.$reitBAN:'🚫',
 	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'ban')
 	          ),
+
 	          array(
 	          	'text'=>($reitLIKE>0)?' 👍'.$reitLIKE:'👍',
 	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'like')
-	          )
+	          ),
+
 	        )
 	    );
+        if ($from == 153057273){
+            $keyboard[1][] = array(
+                'text'=>'⛔',
+	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'removenow')
+            );
+        }
 
 	    return $keyboard;
 	}
