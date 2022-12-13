@@ -118,7 +118,15 @@ class Main{
 		          );
 		return implode("|",$arData);
 	}
-
+    public static function AdminBtns($pic_id, $from){
+        if ($from == 153057273){
+            $keyboard[] = array(
+                'text'=>'⛔',
+	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'removenow')
+            );
+            return $keyboard;
+        }else return false;
+    }
 	public static function reitingBtns($pic_id, $from){
 		$reitLIKE = self::getReiting($pic_id, 'like');
 		$reitDIS = self::getReiting($pic_id, 'dislike');
@@ -147,12 +155,7 @@ class Main{
 
 	        )
 	    );
-        if ($from == 153057273){
-            $keyboard[1][] = array(
-                'text'=>'⛔',
-	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'removenow')
-            );
-        }
+        $keyboard[1] = self::AdminBtns($pic_id, $from);
 
 	    return $keyboard;
 	}
@@ -169,6 +172,12 @@ class Main{
 	            array('text' => '👎 '.$reitDIS.' 🚫'.$reitBAN.'👍 '.$reitLIKE,'callback_data' => self::setReitingBtn($pic_id, $from, 'block')),
 	        )
 	    );
+        if ($from == 153057273){
+            $keyboard[1][] = array(
+                'text'=>'⛔',
+	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'removenow')
+            );
+        }
 
 	    return $keyboard;
 	}
@@ -194,7 +203,7 @@ class Main{
 			'USER_ID' => $from,
 			'ACTION' => $action
 		);
-        if ($action!='info') $db->query('INSERT INTO `RAITING` SET ?As', $data);
+        if ($action!='info' && $action!='removenow') $db->query('INSERT INTO `RAITING` SET ?As', $data);
 
 
     	$img = self::getImageById($id);
@@ -226,6 +235,9 @@ class Main{
 	}
     public static function setDeactive($id){
         Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "0" WHERE ID = "?i"', $id);
+    }
+    public static function setActive($id){
+        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "1" WHERE ID = "?i"', $id);
     }
 
 	public static function getReiting($id, $action){

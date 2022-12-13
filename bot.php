@@ -1,12 +1,14 @@
 <?
-include_once('vendor/autoload.php');
+include_once($_SERVER["DOCUMENT_ROOT"].'/vendor/autoload.php');
 foreach (glob( "vendor/krugozor/database/src/*.php") as $filename) {
     require_once $filename;
 }
-include_once('lib/main.php');
+include_once($_SERVER["DOCUMENT_ROOT"].'/lib/main.php');
+include_once($_SERVER["DOCUMENT_ROOT"].'/lib/myTG.php');
 
 use Telegram\Bot\Api;
 use Lib\Main;
+use my\tg;
 //global $result;
 $telegram = new Api('5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE', true);
 
@@ -178,32 +180,19 @@ if($text){
 		}
 		$telegram->sendmediagroup(['chat_id' => $chat_id, 'media' => json_encode($images)]);
 	}
-	elseif ($text == "/gif"     || $text == "/gif@tigif_bot" ) { gif($telegram, $chat_id); }
-	elseif ($text == "/pic"     || $text == "/pic@tigif_bot" ) { pic($telegram, $chat_id); }
-    elseif ($text == "/mov"     || $text == "/mov@tigif_bot" ) { $img = Main::getSingleImage("mov"); getIMG_send($telegram, $chat_id, $img); }
-	elseif ($text == '/ngif'    || $text == "/ngif@tigif_bot") { ngif($telegram, $chat_id); }
-    elseif ($text == '/npic'    || $text == "/npic@tigif_bot") { npic($telegram, $chat_id); }
+	elseif ($text == "/gif"     || $text == "/gif@tigif_bot" ) { gif($telegram); }
+	elseif ($text == "/pic"     || $text == "/pic@tigif_bot" ) { pic($telegram); }
+    elseif ($text == "/mov"     || $text == "/mov@tigif_bot" ) { mov($telegram); }
+	elseif ($text == '/ngif'    || $text == "/ngif@tigif_bot") { ngif($telegram); }
+    elseif ($text == '/npic'    || $text == "/npic@tigif_bot") { npic($telegram); }
+    elseif ($text == '/rdm'     || $text == "/rdm@tigif_bot" ) { rdm($telegram); }
 	elseif ($text == "/game"    || $text == "/game@tigif_bot") {
 		$img = Main::DBrandomContent();
 		$pic_id = $img['ID'];
 		$user = $result["message"]["from"]['username'];
 		$caption = "@".$user." ".Main::getGameText();
-		if ($img['TYPE'] == "GIF") {
-			$telegram->sendAnimation([
-				'chat_id' 		=> $chat_id,
-				'animation'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
-				'caption'		=> $caption,
-			]);
-		}else{
-            sendpic($telegram, $chat_id, false, $img, $pic_id, $caption);
-		}
+        tg::localSend($img, $result, $telegram, '', $caption);
 	}
-    elseif ( $text == '/rdm'    || $text == "/rdm@tigif_bot" ) {
-        switch (rand(0,1)){
-            case 0:gif($telegram, $chat_id);break;
-            case 1:pic($telegram, $chat_id);break;
-        }
-    }
     elseif ( $text == '/X'      || $text == "/X@tigif_bot" ){
         $reply_markup = json_encode(['remove_keyboard' => true]);
 		$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'Кнопки отключены', 'reply_markup' => $reply_markup ]);
@@ -238,6 +227,7 @@ if($text){
 	elseif ($double_commands[0] == '/sendpic') {
         $id = intval($double_commands[1]);
 		$img = Main::getImageById($id);
+        $telegram->sendMessage(['chat_id' => '153057273', 'text' => $img['ID']." ngif \n" . $img['URL']]);
 		getIMG_send($telegram, $chat_id, $img);
 	}
 
@@ -248,22 +238,38 @@ if($text){
 		$telegram->sendMessage($arAns);
 	}
 }
-
-function gif($telegram, $chat_id){
+function rdm($telegram){
+    global $result;
+    $img = Main::DBrandomContent();
+    tg::localSend($img, $result, $telegram, 'rdm');
+}
+function gif($telegram){
+    global $result;
     $img = Main::getSingleImage("gif");
-    getIMG_send($telegram, $chat_id, $img);
+    //getIMG_send($telegram, $chat_id, $img);
+    tg::localSend($img, $result, $telegram, 'gif');
 }
-function pic($telegram, $chat_id){
+function pic($telegram){
+    global $result;
     $img = Main::getSingleImage("pic");
-    getIMG_send($telegram, $chat_id, $img);
+    //getIMG_send($telegram, $chat_id, $img);
+    tg::localSend($img, $result, $telegram, 'pic');
 }
-function ngif($telegram, $chat_id){
+function ngif($telegram){
+    global $result;
     $img = Main::getSingleImageNEW("gif");
-    getIMG_send($telegram, $chat_id, $img);
+    tg::localSend($img, $result, $telegram, 'ngif');
 }
-function npic($telegram, $chat_id){
+function npic($telegram){
+    global $result;
     $img = Main::getSingleImageNEW("pic");
-    getIMG_send($telegram, $chat_id, $img);
+    tg::localSend($img, $result, $telegram, 'npic');
+}
+function mov($telegram){
+    global $result;
+    $img = Main::getSingleImage("mov");
+    tg::localSend($img, $result, $telegram, 'mov');
+    //getIMG_send($telegram, $chat_id, $img);
 }
 
 function getIMG_send($telegram, $chat_id, $img){
@@ -295,7 +301,7 @@ function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
         'sendAnimation',
         [
             'chat_id' 	=> $chat_id,
-            'animation'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
+            'animation'	=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
             'caption'   =>$caption,
             'reply_markup' => json_encode($inlineKeyboardMarkup)
 	    ]
@@ -313,7 +319,6 @@ function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
     }
     if ($ans) Main::setViewCount($pic_id);
 }
-
 function sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''){
     $result = $telegram->getWebhookUpdates();
     if (!$img){
@@ -378,6 +383,12 @@ function sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
  *
  * установить webhook
  * https://api.telegram.org/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/setWebhook?url=ti-bot.ru/bot.php
+ *
+ * GIF
+ * https://api.telegram.org/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/sendAnimation?chat_id=153057273&animation=http://pornomig.net/data/uploads/2019-02-04/images/pornomig_1103.gif
+ *
+ * //test
+ * https://api.telegram.org/file/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/https://cams.place/uploads/n/naugthycouple1010/naugthycouple1010_5.gif
 
 
  */
