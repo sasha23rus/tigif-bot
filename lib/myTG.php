@@ -22,10 +22,7 @@ class tg{
 
     public static function localSend($img, $result, $telegram, $repeat = '', $caption = ''){
         $pic_id  =  $img['ID'];
-        $from =     $result["message"]["from"]['id'];
         $chat_id =  $result["message"]["chat"]["id"];
-
-        //$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => "chat_id ".$chat_id." \nfrom " . $from ]);
 
         //если результатов больше нету
         if (!$img){
@@ -34,19 +31,13 @@ class tg{
         }
 
         if ($repeat){
-            //если уже голосовал то меняем кнопки
-            /*if (Main::CheckReiting($pic_id, $from)){
-                $keyboard = Main::afterReitingBtns($pic_id, $from);
-            }else{
-                $keyboard = Main::reitingBtns($pic_id, $from);
-            }*/
-            $keyboard = Main::reitingBtns($pic_id, $from);
+            $keyboard = Main::reitingBtns($pic_id);
             $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
+            if($chat_id == 153057273){
+                $keyboard[] = Main::AdminBtns($pic_id, $from);
+                $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
+            }
         }
-        /*elseif($from == 153057273){
-            $keyboard[] = Main::AdminBtns($pic_id, $from);
-            $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
-        }*/
 
         if($img['TYPE']=='GIF'){
             $endpoint = 'sendAnimation';
@@ -66,7 +57,6 @@ class tg{
 
         //отправка запроса
         $out = tg::sendTG($endpoint, $params);
-        //$telegram->sendMessage([ 'chat_id' => '153057273', 'text' => $pic_id." vardump \n" . json_encode($out) ]);
 
         //DEBUG
         if (!$out->ok){
@@ -77,8 +67,6 @@ class tg{
         Main::setViewCount($pic_id);
         //обработка ответа
         if (!$img['FILE_ID']){
-            /*var_dump($img['FILE_ID']);
-            var_dump($out);*/
 
             //$telegram->sendMessage([ 'chat_id' => '153057273', 'text' => $pic_id." vardump \n" . json_encode($out) ]);
             if ($img['TYPE']=='PIC'){

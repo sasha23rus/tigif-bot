@@ -48,19 +48,6 @@ if($result["callback_query"]){
         if (!is_array($file)) { $file_id = $result["callback_query"]['message']['video']['file_id']; }
         else{ $file_id = $file[0]['file_id']; }
 
-        //отобразить админскую кнопку
-        if ($result["callback_query"]['chat']['id'] == 153057273 && $result["callback_query"]['chat']['type'] == 'private'){
-            $keyboard = Main::reitingBtns($id);
-            $keyboard[] = Main::AdminBtns($id);
-            $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
-            $telegram->editMessageReplyMarkup([
-                'chat_id' => $result['callback_query']['message']['chat']['id'],
-                'message_id' => $result['callback_query']['message']['message_id'],
-                'reply_markup' => json_encode($inlineKeyboardMarkup),
-            ]);
-
-        }
-
         //проверка, голосовал ли пользователь
         if ($action!='info') {
             if(Main::CheckReiting($id, $from) > 0){
