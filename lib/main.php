@@ -109,25 +109,22 @@ class Main{
 		return $instance->generate(array('3aad00'=>$gif, 'f10d0d'=>$pic));
 	}
 
-	public static function setReitingBtn($pic_id, $from, $action){
+	public static function setReitingBtn($pic_id, $action){
 		$arData = array(
 		          	'method'=>'reitng',
 		          	'id'=> $pic_id,
-		          	'from'=> $from,
 		          	'action'=>$action
 		          );
 		return implode("|",$arData);
 	}
-    public static function AdminBtns($pic_id, $from){
-        if ($from == 153057273){
-            $keyboard[] = array(
-                'text'=>'⛔',
-	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'removenow')
-            );
-            return $keyboard;
-        }else return false;
+    public static function AdminBtns($pic_id){
+        $keyboard[] = array(
+            'text'=>'⛔',
+            'callback_data'=> self::setReitingBtn($pic_id, 'removenow')
+        );
+        return $keyboard;
     }
-	public static function reitingBtns($pic_id, $from){
+	public static function reitingBtns($pic_id){
 		$reitLIKE = self::getReiting($pic_id, 'like');
 		$reitDIS = self::getReiting($pic_id, 'dislike');
 		$reitBAN = self::getReiting($pic_id, 'ban');
@@ -137,47 +134,27 @@ class Main{
 
 	          array(
 	          	'text'=>($reitDIS>0)?'👎 '.$reitDIS:'👎',
-	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'dislike')
+	          	'callback_data'=> self::setReitingBtn($pic_id, 'dislike')
 	          ),
 	          array(
 	          	'text'=>'#'.$pic_id,
-	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'info')
+	          	'callback_data'=> self::setReitingBtn($pic_id, 'info')
 	          ),
 	          array(
 	          	'text'=>($reitBAN>0)?' 🚫'.$reitBAN:'🚫',
-	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'ban')
+	          	'callback_data'=> self::setReitingBtn($pic_id, 'ban')
 	          ),
 
 	          array(
 	          	'text'=>($reitLIKE>0)?' 👍'.$reitLIKE:'👍',
-	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'like')
+	          	'callback_data'=> self::setReitingBtn($pic_id, 'like')
 	          ),
 
 	        )
 	    );
-        $keyboard[1] = self::AdminBtns($pic_id, $from);
-
-	    return $keyboard;
-	}
-    public static function afterReitingBtns($pic_id, $from){
-		$reitLIKE = intval(self::getReiting($pic_id, 'like'));
-		$reitDIS  = intval(self::getReiting($pic_id, 'dislike'));
-		$reitBAN  = intval(self::getReiting($pic_id, 'ban'));
-		$keyboard = array(
-	        array(
-	            array(
-	          	    'text' => '#'.$pic_id,
-	          	    'callback_data' => self::setReitingBtn($pic_id, $from, 'info')
-	            ),
-	            array('text' => '👎 '.$reitDIS.' 🚫'.$reitBAN.'👍 '.$reitLIKE,'callback_data' => self::setReitingBtn($pic_id, $from, 'block')),
-	        )
-	    );
-        if ($from == 153057273){
-            $keyboard[1][] = array(
-                'text'=>'⛔',
-	          	'callback_data'=> self::setReitingBtn($pic_id, $from, 'removenow')
-            );
-        }
+        /*if ($from == 153057273){
+            $keyboard[1] = self::AdminBtns($pic_id, $from);
+        }*/
 
 	    return $keyboard;
 	}

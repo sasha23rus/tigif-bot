@@ -35,16 +35,18 @@ class tg{
 
         if ($repeat){
             //если уже голосовал то меняем кнопки
-            if (Main::CheckReiting($pic_id, $from)){
+            /*if (Main::CheckReiting($pic_id, $from)){
                 $keyboard = Main::afterReitingBtns($pic_id, $from);
             }else{
                 $keyboard = Main::reitingBtns($pic_id, $from);
-            }
-            $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
-        }else{
-            $keyboard[] = Main::AdminBtns($pic_id, $from);
+            }*/
+            $keyboard = Main::reitingBtns($pic_id, $from);
             $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
         }
+        /*elseif($from == 153057273){
+            $keyboard[] = Main::AdminBtns($pic_id, $from);
+            $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
+        }*/
 
         if($img['TYPE']=='GIF'){
             $endpoint = 'sendAnimation';
@@ -59,19 +61,20 @@ class tg{
             $type = 'video';
         }
 
-        $params = [
-                'chat_id' 	=> $chat_id,
-                $type	    => ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
-                'caption'   =>$caption,
-                'reply_markup' => json_encode($inlineKeyboardMarkup)
-            ];
+        $params = ['chat_id' => $chat_id, 'caption' =>$caption, $type => ($img['FILE_ID'])?$img['FILE_ID']:$img['URL']];
+        if ($inlineKeyboardMarkup) $params['reply_markup'] = json_encode($inlineKeyboardMarkup);
 
         //отправка запроса
         $out = tg::sendTG($endpoint, $params);
+        //$telegram->sendMessage([ 'chat_id' => '153057273', 'text' => $pic_id." vardump \n" . json_encode($out) ]);
+
+        //DEBUG
+        if (!$out->ok){
+            $telegram->sendMessage([ 'chat_id' => '153057273', 'text' => $pic_id." Error \n" . $out->description ]);
+        }
 
         //увеличение счётчика просмотра +1
         Main::setViewCount($pic_id);
-        //$telegram->sendMessage([ 'chat_id' => '153057273', 'text' => $pic_id." vardump \n" . json_encode($out) ]);
         //обработка ответа
         if (!$img['FILE_ID']){
             /*var_dump($img['FILE_ID']);

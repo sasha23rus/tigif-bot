@@ -9,13 +9,14 @@ include_once($_SERVER["DOCUMENT_ROOT"].'/lib/myTG.php');
 use Telegram\Bot\Api;
 use Lib\Main;
 use my\tg;
-//global $result;
+
 $telegram = new Api('5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE', true);
 
 $result = $telegram->getWebhookUpdates();
 $text = $result["message"]["text"];
 $chat_id = $result["message"]["chat"]["id"];
 $name = $result["message"]["from"]["username"];
+$uid = $result["message"]["from"]["id"];
 
 //$telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
 //die();
@@ -31,38 +32,47 @@ $name = $result["message"]["from"]["username"];
         $telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
     }
 
-    $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "getFile  " . json_encode($test) ]);
+    $telegram->sendMessage(['chat_id' => '153057273', 'text' => "getFile  " . json_encode($test) ]);
 }*/
 
 if($result["callback_query"]){
+
+    //$telegram->sendMessage(['chat_id' => '153057273', 'text' => "test  " . json_encode($result["callback_query"]) ]);
 	$callback_data = explode('|',$result["callback_query"]['data']);
 	if ($callback_data[0]=="reitng") {
 		$id = $callback_data[1];
-		$from = $callback_data[2];
-		$action = $callback_data[3];
+		$action = $callback_data[2];
+        $from = $result["callback_query"]["from"]["id"];
 		$file = $result["callback_query"]['message']['photo'];
-		if (!is_array($file)) {
-			$file_id = $result["callback_query"]['message']['animation']['file_id'];
-		}
-        if (!is_array($file)) {
-			$file_id = $result["callback_query"]['message']['video']['file_id'];
-		}else{
-			$file_id = $file[0]['file_id'];
-		}
+		if (!is_array($file)) { $file_id = $result["callback_query"]['message']['animation']['file_id']; }
+        if (!is_array($file)) { $file_id = $result["callback_query"]['message']['video']['file_id']; }
+        else{ $file_id = $file[0]['file_id']; }
+
+        //отобразить админскую кнопку
+        if ($result["callback_query"]['chat']['id'] == 153057273 && $result["callback_query"]['chat']['type'] == 'private'){
+            $keyboard = Main::reitingBtns($id);
+            $keyboard[] = Main::AdminBtns($id);
+            $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
+            $telegram->editMessageReplyMarkup([
+                'chat_id' => $result['callback_query']['message']['chat']['id'],
+                'message_id' => $result['callback_query']['message']['message_id'],
+                'reply_markup' => json_encode($inlineKeyboardMarkup),
+            ]);
+
+        }
 
         //проверка, голосовал ли пользователь
-		if(Main::CheckReiting($id, $from) > 0){
-
-            $keyboard = Main::afterReitingBtns($id, $from);
-			$inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
-			$telegram->editMessageReplyMarkup([
-		        'chat_id' => $result['callback_query']['message']['chat']['id'],
-		        'message_id' => $result['callback_query']['message']['message_id'],
-		        'reply_markup' => json_encode($inlineKeyboardMarkup),
-	        ]);
-        }else{
-            Main::setReiting($id, $from, $action, $file_id);
-            if ($action!='info') {
+        if ($action!='info') {
+            if(Main::CheckReiting($id, $from) > 0){
+                //всплывающее сообщение
+                $telegram->answerCallbackQuery([
+                    'callback_query_id' => $result["callback_query"]['id'],
+                    'text' 			=> 'Уже проголосовал',
+                    'show_alert' 	=> false,
+                    'cache_time' 	=> 1
+                ]);
+            }else{
+                Main::setReiting($id, $from, $action, $file_id);
                 //всплывающее сообщение
                 $telegram->answerCallbackQuery([
                     'callback_query_id' => $result["callback_query"]['id'],
@@ -72,7 +82,7 @@ if($result["callback_query"]){
                 ]);
 
                 //новые кнопки
-                $keyboard = Main::afterReitingBtns($id, $from);
+                $keyboard = Main::reitingBtns($id);
                 $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
                 $telegram->editMessageReplyMarkup([
                     'chat_id' => $result['callback_query']['message']['chat']['id'],
@@ -105,22 +115,10 @@ if($result["callback_query"]){
             ]);
         }
 
-        if ($action=='block'){
-            $telegram->answerCallbackQuery([
-                    'callback_query_id' => $result["callback_query"]['id'],
-                    'text' 			=> 'Уже проголосовал',
-                    'show_alert' 	=> false,
-                    'cache_time' 	=> 1
-                ]);
-        }
-
         if ($action=='removenow'){
             Main::setDeactive($id);
         }
 
-
-
-        // $telegram->sendMessage([ 'chat_id' => '153057273', 'parse_mode'=> 'HTML', 'text' => "file_id ".json_encode($result['callback_query']) ]);
 	}
 }
 
@@ -135,7 +133,22 @@ if($text){
 
 	if     ($text == "/start"   || $text == "/start@tigif_bot") {
 		$reply = "Привет ".$name." добро пожаловать в бота!";
-		$reply_markup = $telegram->replyKeyboardMarkup([ 'keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false, "selective"=>false, "single_use"=>true ]);
+		$reply_markup = $telegram->replyKeyboardMarkup(
+            [
+                'keyboard' => $keyboard,
+                'resize_keyboard' => true, //адекватные маленькие кнопки
+                'one_time_keyboard' => false, //кнопки не пропадают после вызова команды
+                //"selective"=>true, //так и не понял
+            ]
+        );
+
+        /*$reply_markup = $telegram->forceReply();
+
+        $response = $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => "/help",
+            'reply_markup' => $reply_markup
+        ]);*/
 	}
 	elseif ($text == "/help"    || $text == "/help@tigif_bot") {
 		$reply = "\n
@@ -193,6 +206,9 @@ if($text){
 		$caption = "@".$user." ".Main::getGameText();
         tg::localSend($img, $result, $telegram, '', $caption);
 	}
+    elseif ( $text == '/id'      || $text == "/id@tigif_bot" ){
+		$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'ID: '.$uid."\nChat: ".$chat_id ]);
+    }
     elseif ( $text == '/X'      || $text == "/X@tigif_bot" ){
         $reply_markup = json_encode(['remove_keyboard' => true]);
 		$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'Кнопки отключены', 'reply_markup' => $reply_markup ]);
@@ -227,13 +243,13 @@ if($text){
 	elseif ($double_commands[0] == '/sendpic') {
         $id = intval($double_commands[1]);
 		$img = Main::getImageById($id);
-        $telegram->sendMessage(['chat_id' => '153057273', 'text' => $img['ID']." ngif \n" . $img['URL']]);
+        //$telegram->sendMessage(['chat_id' => '153057273', 'text' => $img['ID']." ngif \n" . $img['URL']]);
 		getIMG_send($telegram, $chat_id, $img);
 	}
 
 	//обычные ответы
 	if ($reply) {
-		$arAns = [ 'chat_id' => $chat_id, 'parse_mode'=> 'HTML', 'text' => $reply];
+		$arAns = [ 'chat_id' => $chat_id, 'text' => $reply];
 		if ($reply_markup) $arAns['reply_markup']=$reply_markup;
 		$telegram->sendMessage($arAns);
 	}
@@ -278,9 +294,10 @@ function getIMG_send($telegram, $chat_id, $img){
     $from = $result["message"]["from"]['id'];
 
     if (Main::CheckReiting($pic_id, $from)){
-        $keyboard = Main::afterReitingBtns($pic_id, $from);
+//        $keyboard = Main::afterReitingBtns($pic_id);
+        $keyboard = Main::reitingBtns($pic_id);
     }else{
-	    $keyboard = Main::reitingBtns($pic_id, $from);
+	    $keyboard = Main::reitingBtns($pic_id);
     }
 
 	$inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
