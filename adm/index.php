@@ -1,6 +1,6 @@
 <?
-include_once('vendor/autoload.php');
-include_once('assets/header.php');
+include_once('/vendor/autoload.php');
+include_once('/assets/header.php');
 use Lib\Main;
 
 $s = Main::getFullStatistic();
