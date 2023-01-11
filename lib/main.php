@@ -267,12 +267,10 @@ class Main{
 		}
 		return;
 	}
-
 	public static function SearchUser($id)
 	{
 		return Main::DB()->query('SELECT * FROM `USERS` WHERE `USER_ID` = "?i"', $id)->fetchAssoc() ?? false;
 	}
-
 	public static function AddUser($ar)
 	{
 		$data = array(
@@ -318,6 +316,56 @@ class Main{
 	{
 		return  Main::DB()->query('SELECT TEXT FROM `Game` ORDER BY RAND() LIMIT 1 ')->fetchRow()[0];
 	}
+
+    /**
+	 *
+	 * TOP
+	 *
+	 */
+
+    public static function setTopBtn($action): string
+    {
+		$arData = array(
+            'method'=>'top',
+            'action'=>$action
+        );
+		return implode("|",$arData);
+	}
+    public static function TopBtns(): array
+    {
+        $keyboard = array(
+	        array(
+	            array(
+	          	    'text'=>'TOP GIF`s all time',
+	          	    'callback_data'=> self::setTopBtn('gif_all')
+	            ),
+	            array(
+                    'text'=>'TOP GIf`s week',
+                    'callback_data'=> self::setTopBtn('gif_7')
+                ),
+	        ),
+            array(
+                array(
+	          	    'text'=>'TOP PIC`s all time',
+	          	    'callback_data'=> self::setTopBtn('pic_all')
+	            ),
+	            array(
+                    'text'=>'TOP PIC`s week',
+                    'callback_data'=> self::setTopBtn('pic_7')
+                )
+            )
+	    );
+
+	    return $keyboard;
+    }
+    public static function getTopAll($type){
+        $result =  Main::DB()->query('SELECT * FROM `GIF_TABLE` WHERE `ACTIVE` = 1 AND `TYPE` = "?s" ORDER BY `RAITING` desc  LIMIT 3', $type);
+        while($data = $result->fetchAssoc()){
+	    	$res[] = $data;
+	    }
+
+	    return $res;
+    }
 
 }
 

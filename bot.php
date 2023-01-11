@@ -39,17 +39,27 @@ if($result["callback_query"]){
 
     //$telegram->sendMessage(['chat_id' => '153057273', 'text' => "test  " . json_encode($result["callback_query"]) ]);
 	$callback_data = explode('|',$result["callback_query"]['data']);
+    $from = $result["callback_query"]["from"]["id"];
+    $chat_id = $result['callback_query']['message']['chat']['id'];
 	if ($callback_data[0]=="reitng") {
 		$id = $callback_data[1];
 		$action = $callback_data[2];
-        $from = $result["callback_query"]["from"]["id"];
 		$file = $result["callback_query"]['message']['photo'];
 		if (!is_array($file)) { $file_id = $result["callback_query"]['message']['animation']['file_id']; }
         if (!is_array($file)) { $file_id = $result["callback_query"]['message']['video']['file_id']; }
         else{ $file_id = $file[0]['file_id']; }
 
+        if ($action=='removenow'){
+            Main::setDeactive($id);
+            $telegram->answerCallbackQuery([
+                'callback_query_id' => $result["callback_query"]['id'],
+                'text' 			=> 'Удалено',
+                'show_alert' 	=> false,
+                'cache_time' 	=> 1
+            ]);
+        }
         //проверка, голосовал ли пользователь
-        if ($action!='info') {
+        if ($action!='info' &&  $action!='removenow') {
             if(Main::CheckReiting($id, $from) > 0){
                 //всплывающее сообщение
                 $telegram->answerCallbackQuery([
@@ -101,12 +111,34 @@ if($result["callback_query"]){
                 'text' => "INFO:\n".$info
             ]);
         }
-
-        if ($action=='removenow'){
-            Main::setDeactive($id);
-        }
-
 	}
+    if ($callback_data[0]=="top") {
+        $action = $callback_data[1];
+        if ($action == 'gif_all'){
+            $imgList = Main::getTopAll('GIF');
+            foreach ($imgList as $key => $img){
+                if ($key == 0 ) $icon = "🥇";
+                if ($key == 1 ) $icon = "🥈";
+                if ($key == 2 ) $icon = "🥉";
+                $response = $telegram->setAsyncRequest(false)->uploadFile(
+                    'sendAnimation', ['chat_id' => $chat_id, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> $icon." место" ]
+                );
+            }
+        }
+        if ($action == 'pic_all'){
+            $imgList = Main::getTopAll('PIC');
+            foreach ($imgList as $key => $img){
+                /*$response = $telegram->setAsyncRequest(false)->uploadFile(
+                    'sendAnimation', ['chat_id' => $from, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> "🏆 первое место" ]
+                );
+                if ($key > 0){
+                }*/
+				    $images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL']);
+            }
+    		$telegram->sendmediagroup(['chat_id' => $chat_id, 'media' => json_encode($images)]);
+
+        }
+    }
 }
 
 $keyboard = [
@@ -116,9 +148,9 @@ $keyboard = [
 $double_commands=explode(" ", $text);
 
 if($text){
-	Main::User($result["message"]["from"]); //сохраняем пользователя
 
-	if     ($text == "/start"   || $text == "/start@tigif_bot") {
+	if($text == "/start"   || $text == "/start@tigif_bot") {
+	    Main::User($result["message"]["from"]); //сохраняем пользователя
 		$reply = "Привет ".$name." добро пожаловать в бота!";
 		$reply_markup = $telegram->replyKeyboardMarkup(
             [
@@ -128,14 +160,6 @@ if($text){
                 //"selective"=>true, //так и не понял
             ]
         );
-
-        /*$reply_markup = $telegram->forceReply();
-
-        $response = $telegram->sendMessage([
-            'chat_id' => $chat_id,
-            'text' => "/help",
-            'reply_markup' => $reply_markup
-        ]);*/
 	}
 	elseif ($text == "/help"    || $text == "/help@tigif_bot") {
 		$reply = "\n
@@ -152,6 +176,7 @@ if($text){
 		/tipost - #Сиськопост
 		/sendpic ID - показать картинку/гифку по id
 		/game - пошлая цитата
+		/top - Лучшие по голосованию
 		/X - скрыть клавиатуру чтобы она снова отобразилась нажмите /start
 		";
 	}
@@ -170,12 +195,13 @@ if($text){
 	}
 	elseif ($text == "/tipost"  || $text == "/tipost@tigif_bot") {
 		$get = Main::getRandImages();
+        $images = array();
 		foreach ($get as $key => $img) {
 			if ($key==0) {
-				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?$img['FILE_ID']:$img['URL'], "caption" => "#сиськопост");
+				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL'], "caption" => "#сиськопост");
 			}
 			else{
-				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?$img['FILE_ID']:$img['URL']);
+				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL']);
 			}
 		}
 		$telegram->sendmediagroup(['chat_id' => $chat_id, 'media' => json_encode($images)]);
@@ -183,9 +209,10 @@ if($text){
 	elseif ($text == "/gif"     || $text == "/gif@tigif_bot" ) { gif($telegram); }
 	elseif ($text == "/pic"     || $text == "/pic@tigif_bot" ) { pic($telegram); }
     elseif ($text == "/mov"     || $text == "/mov@tigif_bot" ) { mov($telegram); }
-	elseif ($text == '/ngif'    || $text == "/ngif@tigif_bot") { ngif($telegram); }
-    elseif ($text == '/npic'    || $text == "/npic@tigif_bot") { npic($telegram); }
+	elseif ($text == '/ngif'    || $text == "/ngif@tigif_bot") { ngif($telegram);}
+    elseif ($text == '/npic'    || $text == "/npic@tigif_bot") { npic($telegram);}
     elseif ($text == '/rdm'     || $text == "/rdm@tigif_bot" ) { rdm($telegram); }
+    elseif ($text == "/top"     || $text == "/top@tigif_bot")  { top($telegram); }
 	elseif ($text == "/game"    || $text == "/game@tigif_bot") {
 		$img = Main::DBrandomContent();
 		$pic_id = $img['ID'];
@@ -205,6 +232,7 @@ if($text){
 	//Добавление материала
     elseif ($double_commands[0] == '/add'){
         $validUrl = filter_var($double_commands[1], FILTER_VALIDATE_URL);
+        $type = false;
         if ($validUrl){
             $fileInfo = new SplFileInfo($validUrl);
             if ($fileInfo->getExtension() == 'gif'){ $type = 'gif'; }
@@ -218,12 +246,14 @@ if($text){
             else{
                 $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'ошибка: Формат файла не поддерживается']);
             }
-            $add = Main::addImage($type, trim($double_commands[1]));
-            if ($add > 0) {
-                $img = Main::getImageById($add);
-                getIMG_send($telegram, $chat_id, $img);
-            }else{
-                $telegram->sendMessage([ 'chat_id' => $chat_id, 'parse_mode'=> 'HTML', 'text' => 'ошибка: Файл уже есть']);
+            if ($type){
+                $add = Main::addImage($type, trim($double_commands[1]));
+                if ($add > 0) {
+                    $img = Main::getImageById($add);
+                    getIMG_send($telegram, $chat_id, $img);
+                }else{
+                    $telegram->sendMessage([ 'chat_id' => $chat_id, 'parse_mode'=> 'HTML', 'text' => 'ошибка: Файл уже есть']);
+                }
             }
         }
     }
@@ -241,61 +271,71 @@ if($text){
 		$telegram->sendMessage($arAns);
 	}
 }
-function rdm($telegram){
+
+function top($telegram){
+    global $result;
+    $chat_id = $result["message"]["chat"]["id"];
+    $inlineKeyboardMarkup = array('inline_keyboard' => Main::TopBtns());
+    $arAns = [ 'chat_id' => $chat_id, 'text' => "Лучшее из того что мы сами выбрали", 'reply_markup'=>json_encode($inlineKeyboardMarkup) ];
+    $telegram->sendMessage($arAns);
+//    $img = Main::top();
+//    return tg::localSend($img, $result, $telegram, 'rdm');
+}
+function rdm($telegram): ?bool
+{
     global $result;
     $img = Main::DBrandomContent();
-    tg::localSend($img, $result, $telegram, 'rdm');
+    return tg::localSend($img, $result, $telegram, 'rdm');
 }
-function gif($telegram){
+function gif($telegram): ?bool
+{
     global $result;
     $img = Main::getSingleImage("gif");
-    //getIMG_send($telegram, $chat_id, $img);
-    tg::localSend($img, $result, $telegram, 'gif');
+    return tg::localSend($img, $result, $telegram, 'gif');
 }
-function pic($telegram){
+function pic($telegram): ?bool
+{
     global $result;
     $img = Main::getSingleImage("pic");
-    //getIMG_send($telegram, $chat_id, $img);
-    tg::localSend($img, $result, $telegram, 'pic');
+    return tg::localSend($img, $result, $telegram, 'pic');
 }
-function ngif($telegram){
+function ngif($telegram): ?bool
+{
     global $result;
     $img = Main::getSingleImageNEW("gif");
-    tg::localSend($img, $result, $telegram, 'ngif');
+    return tg::localSend($img, $result, $telegram, 'ngif');
 }
-function npic($telegram){
+function npic($telegram): ?bool
+{
     global $result;
     $img = Main::getSingleImageNEW("pic");
-    tg::localSend($img, $result, $telegram, 'npic');
+    return tg::localSend($img, $result, $telegram, 'npic');
 }
-function mov($telegram){
+function mov($telegram): ?bool
+{
     global $result;
     $img = Main::getSingleImage("mov");
-    tg::localSend($img, $result, $telegram, 'mov');
-    //getIMG_send($telegram, $chat_id, $img);
+    return tg::localSend($img, $result, $telegram, 'mov');
 }
 
-function getIMG_send($telegram, $chat_id, $img){
+function getIMG_send($telegram, $chat_id, $img): void
+{
     $pic_id = $img['ID'];
     $result = $telegram->getWebhookUpdates();
     $from = $result["message"]["from"]['id'];
 
-    if (Main::CheckReiting($pic_id, $from)){
-//        $keyboard = Main::afterReitingBtns($pic_id);
-        $keyboard = Main::reitingBtns($pic_id);
-    }else{
-	    $keyboard = Main::reitingBtns($pic_id);
-    }
-
+    $keyboard = Main::reitingBtns($pic_id);
+    if($from == 153057273) $keyboard[] = Main::AdminBtns($pic_id);
 	$inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
+
 
 	if ($img['TYPE'] == "GIF") { sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id); }
     if ($img['TYPE'] == "PIC") { sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id); }
     if ($img['TYPE'] == "MOV") { sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id); }
 }
 
-function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''){
-    $result = $telegram->getWebhookUpdates();
+function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''): void
+{
     if (!$img){
         $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
         return;
@@ -305,7 +345,7 @@ function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
         'sendAnimation',
         [
             'chat_id' 	=> $chat_id,
-            'animation'	=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
+            'animation'	=> ($img['FILE_ID'])?:$img['URL'],
             'caption'   =>$caption,
             'reply_markup' => json_encode($inlineKeyboardMarkup)
 	    ]
@@ -323,7 +363,8 @@ function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
     }
     if ($ans) Main::setViewCount($pic_id);
 }
-function sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''){
+function sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''): void
+{
     $result = $telegram->getWebhookUpdates();
     if (!$img){
         $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
@@ -332,7 +373,7 @@ function sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
 
     $response = $telegram->setAsyncRequest(false)->sendPhoto([
 		'chat_id' 	=> $chat_id,
-		'photo'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
+		'photo'		=> ($img['FILE_ID'])?:$img['URL'],
         'caption'   =>$caption,
 		'reply_markup' => json_encode($inlineKeyboardMarkup)
 	]);
@@ -357,7 +398,7 @@ function sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
     }
     $response = $telegram->setAsyncRequest(false)->sendVideo([
 		'chat_id' 	=> $chat_id,
-		'video'		=> ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
+		'video'		=> ($img['FILE_ID'])?:$img['URL'],
         'caption'   =>$caption,
 		'reply_markup' => json_encode($inlineKeyboardMarkup)
 	]);

@@ -32,11 +32,8 @@ class tg{
 
         if ($repeat){
             $keyboard = Main::reitingBtns($pic_id);
+            if($chat_id == 153057273) $keyboard[] = Main::AdminBtns($pic_id);
             $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
-            if($chat_id == 153057273){
-                $keyboard[] = Main::AdminBtns($pic_id, $from);
-                $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
-            }
         }
 
         if($img['TYPE']=='GIF'){
@@ -123,7 +120,12 @@ class tg{
                 }
             }
         }
+
+        return true;
     }
+
+
+
     //если приходит ошибка откыртия файла то блокирует повторители
     /*public static function sendV2($endpoint, $type, $telegram, $img, $chat_id, $inlineKeyboardMarkup, $caption = ''){
         $response = $telegram->uploadFile(

@@ -13,10 +13,6 @@ use my\tg;
 $type = 'pic';
 $url = 'http://i.imgur.com/8GsnJBX.jpg';
 
-$img = Main::getImageById(1);
+$img = Main::getTopAll('GIF');
 
-$result["message"]["chat"]["id"] = 153057273;
-$result["message"]["from"]['id'] = 5924175794;
-$telegram = new Api('5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE', true);
-
-tg::localSend($img, $result, $telegram);
+var_dump($img);
