@@ -290,10 +290,52 @@ class Main{
 
 	/**
 	 *
-	 * Работа с сообщениями
+	 * Работа с сообщениями /добавляем контент
 	 *
 	 */
 
+	/*public static function addImage($type, $url, $info = ''){
+	if (!self::checkIMGinBase($url) > 0) {
+		$data = array(
+			'ACTIVE' => 1,
+			'URL' => $url,
+			'TYPE' => strtoupper($type)
+		);
+		if ($info)
+			$data['INFO'] = serialize($info);
+
+		$res = Main::DB();
+		$res->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
+		return $res->getLastInsertId();
+	}*/
+	public static function addContent($type, $sendresult){
+		
+		$res = Main::DB();
+		$dataFile = array(
+			'file_id' => $sendresult['file_id'],
+			'file_unique_id'=>$sendresult['file_unique_id'],
+			'file_size'=>$sendresult['file_size'],
+			'file_path'=>$sendresult['file_path'],
+			'user_name'=>$sendresult['user_name'],
+			'user_uid'=>$sendresult['user_uid'],
+			'type'=>$sendresult['type'],
+			'thumb'=>$sendresult['thumb'],
+			'file_name'=>$sendresult['file_name'],
+			'mime_type'=>$sendresult['mime_type'],
+		);
+		$res->query('INSERT INTO `FILES` SET ?As', $dataFile);
+		$id = $res->getLastInsertId();
+		$data = array(
+			'ACTIVE' => 1,
+			'URL' => $sendresult["info"]["link"],
+			'INFO' => serialize($sendresult["info"]),
+			'TYPE' => strtoupper($type),
+			'FILE_ID'=>$sendresult['file_id'],
+			'FILE'=>$id
+		);
+		$res->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
+		return $res->getLastInsertId();
+	}
 
 	 /**
 	  *

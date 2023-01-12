@@ -21,9 +21,46 @@ $uid = $result["message"]["from"]["id"];
 //$telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
 //die();
 
-/*if ($result){
-    $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "принял " . json_encode($result) ]);
-    $count = count($result['message']['photo'])-1;
+if ($result["message"]["chat"]["type"]=="private"){
+	//если прислали видео
+	//$telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "принял " . json_encode($result) ]);
+	if ($result["message"]["video"]){
+		$test = $telegram->setAsyncRequest(false)->getFile(['file_id' => $result['message']['video']['file_id'] ]);
+		$file_from_tgrm = 'https://api.telegram.org/file/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/'.$test['file_path'];
+		$path = $_SERVER["DOCUMENT_ROOT"].'/upload/'.stripcslashes($test['file_path']);
+		$move = copy($file_from_tgrm, $path);
+		//$telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "файл " . $file_from_tgrm ]);
+		//$telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "original_puth " . $siteurl ]);
+
+		if($move){
+			//$telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
+			//$telegram->sendMessage(['chat_id' => '153057273', 'text' => "getFile  " . json_encode($test) ]);
+			$sendresult = array(
+				"info"=>array(
+					"title"=>"Добавлено пользователем",
+					"link" => "https://ti-bot.ru/upload/".stripcslashes($test['file_path'])
+				),
+				"user_name" => $name,
+				"user_uid" => $uid,
+				"file_path" => '/upload/'.stripcslashes($test['file_path']),
+				"type" => 'video',
+				"thumb"=>$result['message']['video']['thumb']["file_id"],
+				"file_id"=>$result['message']['video']["file_id"],
+				"file_unique_id"=>$result['message']['video']["file_unique_id"],
+				"file_name"=>$result['message']['video']["file_name"],
+				"mime_type"=>$result['message']['video']["mime_type"],
+				"file_size"=>$result['message']['video']["file_size"],
+			);
+			$id = Main::addContent("MOV", $sendresult);
+			$img = Main::getImageById($id);
+			getIMG_send($telegram, $chat_id, $img);//отправляем результат
+		}else{
+			$telegram->sendMessage(['chat_id' => '153057273', 'text' => "Ошибка сохранения ".json_encode($move) ]);
+		}
+	}
+	
+	
+    /*$count = count($result['message']['photo'])-1;
     $test = $telegram->setAsyncRequest(false)->getFile(['file_id' => $result['message']['photo'][$count]['file_id'] ]);
     //Сохранить файл
     $url = 'https://api.telegram.org/file/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/'.$test['file_path'];
@@ -32,8 +69,10 @@ $uid = $result["message"]["from"]["id"];
         $telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
     }
 
-    $telegram->sendMessage(['chat_id' => '153057273', 'text' => "getFile  " . json_encode($test) ]);
-}*/
+    $telegram->sendMessage(['chat_id' => '153057273', 'text' => "getFile  " . json_encode($test) ]);*/
+}
+
+
 
 if($result["callback_query"]){
 
@@ -178,6 +217,8 @@ if($text){
 		/game - пошлая цитата
 		/top - Лучшие по голосованию
 		/X - скрыть клавиатуру чтобы она снова отобразилась нажмите /start
+		
+		Бот может принимть mp4 файлы размером до 50 мб
 		";
 	}
 	elseif ($text == "/statistic"|| $text == "/statistic@tigif_bot") {
@@ -407,7 +448,7 @@ function sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
          if ($ans) Main::setImageFileID($pic_id, $ans);
     }
 
-    $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . json_encode($response) ]);
+    //$telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . json_encode($response) ]);
 
     if (!$img['FILE_ID'] && !$ans){
          $telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "Не смог открыть " . $img['URL'] ]);

@@ -4,5 +4,7 @@ Disallow: /assets/
 Disallow: /lib/
 Disallow: /test/
 Disallow: /vendor/
-Disallow: t.php
-Disallow: t2.php
+Disallow: /t.php
+Disallow: /t2.php
+Disallow: /bot.php
+Disallow: /getfile.php
