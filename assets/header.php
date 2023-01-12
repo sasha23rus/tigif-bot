@@ -1,10 +1,10 @@
 <?
-include_once('vendor/autoload.php');
-foreach (glob( "vendor/krugozor/database/src/*.php") as $filename) {
+include_once($_SERVER["DOCUMENT_ROOT"].'/vendor/autoload.php');
+foreach (glob( $_SERVER["DOCUMENT_ROOT"]."/vendor/krugozor/database/src/*.php") as $filename) {
     require_once $filename;
 }
 
-include_once('lib/main.php');
+include_once($_SERVER["DOCUMENT_ROOT"].'/lib/main.php');
 
 use Lib\Site;
 use Krugozor\Database\Mysql;

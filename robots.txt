@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /adm/
+Disallow: /assets/
+Disallow: /lib/
+Disallow: /test/
+Disallow: /vendor/
+Disallow: t.php
+Disallow: t2.php

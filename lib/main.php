@@ -34,7 +34,7 @@ class Main{
 		    'cx' 	=> '278b988d6545e4b27',
 		    'imgType' => $imgType,
 		    'q'		=> $query,
-		    'safe'	=> 'active',
+		    'safe'	=> 'false',
 		    'searchType'=> 'image',
 		    'sort'	=> 'date:d',
 		    'key' 	=> 'AIzaSyDFNyTrlssWgzHFXyTVc7vArsa9lj3DC4o',
@@ -385,7 +385,7 @@ class Site
 				<link rel="stylesheet" href="https://atuin.ru/demo/mosaic/jquery.mosaic.min.css">
 
 
-				<link href="assets/css/cover.css" rel="stylesheet">
+				<link href="/assets/css/cover.css" rel="stylesheet">
 
 				<script
   src="https://code.jquery.com/jquery-3.6.1.min.js"
