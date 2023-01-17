@@ -34,7 +34,7 @@ class Main{
 		    'cx' 	=> '278b988d6545e4b27',
 		    'imgType' => $imgType,
 		    'q'		=> $query,
-		    'safe'	=> 'false',
+		    'safe'	=> false,
 		    'searchType'=> 'image',
 		    'sort'	=> 'date:d',
 		    'key' 	=> 'AIzaSyDFNyTrlssWgzHFXyTVc7vArsa9lj3DC4o',
@@ -90,6 +90,8 @@ class Main{
             $res = Main::DB();
             $res->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
 	    	return $res->getLastInsertId();
+		}else{
+			return 'double';
 		}
 	}
 

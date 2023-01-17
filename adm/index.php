@@ -76,31 +76,24 @@ use Lib\Main;
 			}else{
 				?>
 				<h2>Результаты <?=count($img['items'])?:0?></h2>
-				<form action="/adm/add_post.php" method="post">
 					<?
 					foreach ($img['items'] as $key => $value) {
-						$add = 1;
-						$value['query_search'] = $q;
-						//$add = Main::addImage($type, $value['link'], $value);
-						//if ($add) {
-							?>
-							<div class="col-4">
-								<div class="p-3 border bg-light">
-									<input type="checkbox" name="key[]" value="<?=$key?>">
-									<img src="<?=$value['link']?>" alt="" width="100px">
-									<!--<br>
-									<pre>
-										<?/*print_r($value)*/?>
-									</pre>-->
-								</div>
+						?>
+						<div class="col-4 -add-pic-" data-key="<?=$key?>" >
+							<form class="form-dialog-content-<?=$key?>">
+							<div class="p-3 border bg-light">
+								<img src="<?=$value['link']?>" alt="" width="100px" class="-add-" style="cursor: pointer">
 							</div>
 							<input type="hidden" name="array_<?=$key?>" value='<?=json_encode($value)?>'>
-							<?
-						//}
+							<input type="radio" name="type" value="gif" <?=($type=='gif')?'checked':''?>>gif
+							<input type="radio" name="type" value="pic" <?=($type=='pic')?'checked':''?>>pic
+							<input type="hidden" name="query_search" value="<?=$q?>">
+							<div class="answer">&nbsp;</div>
+							</form>
+						</div>
+						<?
 					}
 					?>
-					<input type="submit" name="save">
-				</form>
 				<?
 			}
 		}
@@ -141,6 +134,58 @@ use Lib\Main;
 	</div>
 </div>
 <br>
+
+<!--<h2>test</h2>
+<div class="col-4 -add-pic-" data-key="0" >
+	
+	<form class="form-dialog-content-0">
+		<div class="p-3 border bg-light">
+			<img src="https://siski.name/uploads/posts/2021-11/1636824118_1-siski-name-p-porno-golie-devushki-srednie-siski-11.jpg" alt="" width="100px" class="-add-" style="cursor: pointer">
+		</div>
+		<input type="hidden" name="array_0" value="{&quot;kind&quot;:&quot;customsearch#result&quot;,&quot;title&quot;:&quot;\u0413\u043e\u043b\u044b\u0435 \u0434\u0435\u0432\u0443\u0448\u043a\u0438 \u0441\u0440\u0435\u0434\u043d\u0438\u0435 \u0441\u0438\u0441\u044c\u043a\u0438 (48 \u0444\u043e\u0442\u043e) - \u043f\u043e\u0440\u043d\u043e&quot;,&quot;htmlTitle&quot;:&quot;\u0413\u043e\u043b\u044b\u0435 \u0434\u0435\u0432\u0443\u0448\u043a\u0438 \u0441\u0440\u0435\u0434\u043d\u0438\u0435 <b>\u0441\u0438\u0441\u044c\u043a\u0438<\/b> (48 \u0444\u043e\u0442\u043e) - \u043f\u043e\u0440\u043d\u043e&quot;,&quot;link&quot;:&quot;https:\/\/siski.name\/uploads\/posts\/2021-11\/1636824118_1-siski-name-p-porno-golie-devushki-srednie-siski-11.jpg&quot;,&quot;displayLink&quot;:&quot;siski.name&quot;,&quot;snippet&quot;:&quot;\u0413\u043e\u043b\u044b\u0435 \u0434\u0435\u0432\u0443\u0448\u043a\u0438 \u0441\u0440\u0435\u0434\u043d\u0438\u0435 \u0441\u0438\u0441\u044c\u043a\u0438 (48 \u0444\u043e\u0442\u043e) - \u043f\u043e\u0440\u043d\u043e&quot;,&quot;htmlSnippet&quot;:&quot;\u0413\u043e\u043b\u044b\u0435 \u0434\u0435\u0432\u0443\u0448\u043a\u0438 \u0441\u0440\u0435\u0434\u043d\u0438\u0435 <b>\u0441\u0438\u0441\u044c\u043a\u0438<\/b> (48 \u0444\u043e\u0442\u043e) - \u043f\u043e\u0440\u043d\u043e&quot;,&quot;mime&quot;:&quot;image\/jpeg&quot;,&quot;fileFormat&quot;:&quot;image\/jpeg&quot;,&quot;image&quot;:{&quot;contextLink&quot;:&quot;https:\/\/siski.name\/13296-golye-devushki-srednie-siski-48-foto.html&quot;,&quot;height&quot;:911,&quot;width&quot;:1362,&quot;byteSize&quot;:388597,&quot;thumbnailLink&quot;:&quot;https:\/\/encrypted-tbn0.gstatic.com\/images?q=tbn:ANd9GcSZfiYqxTgf4g4sqhpLTLyYVVGQVA507K9RoLSotpkix7pqn95Snv8Y3Q&amp;s&quot;,&quot;thumbnailHeight&quot;:100,&quot;thumbnailWidth&quot;:150}}">
+		<input type="radio" name="type" value="gif">gif
+		<input type="radio" name="type" value="pic" checked="">pic
+		<input type="hidden" name="query_search" value="самые крутые сиськи">
+		<div class="answer">&nbsp;</div>
+	</form>
+</div>-->
+
+<script>
+(() => {
+	document.addEventListener('click', async (event) => {
+
+		if (event.target.closest('.-add-pic-')) {
+	
+			if (!event.target.closest('.-add-')) return;
+		
+			const block = event.target.closest('.-add-pic-');
+			const key = block.getAttribute('data-key');
+			const answer = block.querySelector(".answer");
+
+			const form = document.querySelector(".form-dialog-content-"+key);
+			let url = "/adm/add_post.php";
+			answer.textContent = 'sending...';
+
+			const formData  = new FormData(form)
+				formData.append('key', key);
+			fetch(url,{
+				method:'POST',
+				body: formData
+			})
+			.then((response)=>response.json())
+			.then((result)=>{
+				console.log(result);
+				if(result.status === true){
+					answer.textContent = 'ok';
+				}else{
+					answer.textContent = 'err';
+					// document.getElementById("err_form").innerHTML = result.error;
+				}
+			})
+		}
+	})
+})();
+</script>
 
 <?nextBTN($type, $q)?>
 
