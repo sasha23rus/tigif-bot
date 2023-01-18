@@ -55,7 +55,36 @@ if ($result["message"]["chat"]["type"]=="private"){
 			$img = Main::getImageById($id);
 			getIMG_send($telegram, $chat_id, $img);//отправляем результат
 		}else{
-			$telegram->sendMessage(['chat_id' => '153057273', 'text' => "Ошибка сохранения ".json_encode($move) ]);
+			$telegram->sendMessage(['chat_id' => $chat_id, 'text' => "Ошибка сохранения ".json_encode($move) ]);
+		}
+	}
+	if ($result["message"]["animation"]){
+		$test = $telegram->setAsyncRequest(false)->getFile(['file_id' => $result['message']['animation']['file_id'] ]);
+		$file_from_tgrm = 'https://api.telegram.org/file/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/'.$test['file_path'];
+		$path = $_SERVER["DOCUMENT_ROOT"].'/upload/'.stripcslashes($test['file_path']);
+		$move = copy($file_from_tgrm, $path);
+		if($move){
+			$sendresult = array(
+				"info"=>array(
+					"title"=>"Добавлено пользователем",
+					"link" => "https://ti-bot.ru/upload/".stripcslashes($test['file_path'])
+				),
+				"user_name" => $name,
+				"user_uid" => $uid,
+				"file_path" => '/upload/'.stripcslashes($test['file_path']),
+				"type" => 'animation',
+				"thumb"=>$result['message']['animation']['thumb']["file_id"],
+				"file_id"=>$result['message']['animation']["file_id"],
+				"file_unique_id"=>$result['message']['animation']["file_unique_id"],
+				"file_name"=>$result['message']['animation']["file_name"],
+				"mime_type"=>$result['message']['animation']["mime_type"],
+				"file_size"=>$result['message']['animation']["file_size"],
+			);
+			$id = Main::addContent("GIF", $sendresult);
+			$img = Main::getImageById($id);
+			getIMG_send($telegram, $chat_id, $img);//отправляем результат
+		}else{
+			$telegram->sendMessage(['chat_id' => $chat_id, 'text' => "Ошибка сохранения ".json_encode($move) ]);
 		}
 	}
 	
@@ -135,7 +164,7 @@ if($result["callback_query"]){
             $info = "Ссылка на этот контент /sendpic ".$id;
             if ($arInfo['title'])   $info .= "\n".$arInfo['title'];
             if ($arInfo['link'])    $info .= "\nСсылка на оригинал ".$arInfo['link'];
-            if ($arInfo['image']['contextLink']) $info .= "\nСсылка на сайт ".$arInfo['image']['contextLink'];
+			
             $telegram->answerCallbackQuery([
                 'callback_query_id' => $result["callback_query"]['id'],
                 'text' 			=> 'Отправить в группе /sendpic '.$id,

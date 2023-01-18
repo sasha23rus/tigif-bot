@@ -79,10 +79,10 @@ use Lib\Main;
 					<?
 					foreach ($img['items'] as $key => $value) {
 						?>
-						<div class="col-4 -add-pic-" data-key="<?=$key?>" >
+						<div class="col-3 -add-pic-" data-key="<?=$key?>" >
 							<form class="form-dialog-content-<?=$key?>">
 							<div class="p-3 border bg-light">
-								<img src="<?=$value['link']?>" alt="" width="100px" class="-add-" style="cursor: pointer">
+								<img src="<?=$value['link']?>" alt="" width="120px" class="-add-" style="cursor: pointer">
 							</div>
 							<input type="hidden" name="array_<?=$key?>" value='<?=json_encode($value)?>'>
 							<input type="radio" name="type" value="gif" <?=($type=='gif')?'checked':''?>>gif
