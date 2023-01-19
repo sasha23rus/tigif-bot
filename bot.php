@@ -87,6 +87,33 @@ if ($result["message"]["chat"]["type"]=="private"){
 			$telegram->sendMessage(['chat_id' => $chat_id, 'text' => "Ошибка сохранения ".json_encode($move) ]);
 		}
 	}
+	if ($result["message"]["photo"]){
+		$file_id = $result["message"]["photo"][count($result["message"]["photo"]) - 1]["file_id"];
+		$test = $telegram->setAsyncRequest(false)->getFile(['file_id' => $file_id ]);
+		$file_from_tgrm = 'https://api.telegram.org/file/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/'.$test['file_path'];
+		$path = $_SERVER["DOCUMENT_ROOT"].'/upload/'.stripcslashes($test['file_path']);
+		$move = copy($file_from_tgrm, $path);
+		if($move){
+			$sendresult = array(
+				"info"=>array(
+					"title"=>"Добавлено пользователем",
+					"link" => "https://ti-bot.ru/upload/".stripcslashes($test['file_path'])
+				),
+				"user_name" => $name,
+				"user_uid" => $uid,
+				"file_path" => '/upload/'.stripcslashes($test['file_path']),
+				"type" => 'photo',
+				"thumb"=>$result['message']['photo'][0]["file_id"],
+				"file_id"=>$file_id,
+				"file_unique_id"=>$result['message']['photo'][count($result["message"]["photo"]) - 1]["file_unique_id"],
+			);
+			$id = Main::addContent("PIC", $sendresult);
+			$img = Main::getImageById($id);
+			getIMG_send($telegram, $chat_id, $img);//отправляем результат
+		}else{
+			$telegram->sendMessage(['chat_id' => $chat_id, 'text' => "Ошибка сохранения ".json_encode($move) ]);
+		}
+	}
 	
 	
     /*$count = count($result['message']['photo'])-1;
@@ -247,7 +274,10 @@ if($text){
 		/top - Лучшие по голосованию
 		/X - скрыть клавиатуру чтобы она снова отобразилась нажмите /start
 		
-		Бот может принимть mp4 файлы размером до 50 мб
+		Бот может принимть mp4 файлы
+		Бот может принимает gif файлы
+		В личку можно кидать файлы по одному или несколько сразу
+		файлы размером до 50 мб
 		";
 	}
 	elseif ($text == "/statistic"|| $text == "/statistic@tigif_bot") {
