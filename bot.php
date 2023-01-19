@@ -22,8 +22,8 @@ $uid = $result["message"]["from"]["id"];
 //die();
 
 if ($result["message"]["chat"]["type"]=="private"){
-	//если прислали видео
 	//$telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "принял " . json_encode($result) ]);
+	//бот принимает файлы
 	if ($result["message"]["video"]){
 		$test = $telegram->setAsyncRequest(false)->getFile(['file_id' => $result['message']['video']['file_id'] ]);
 		$file_from_tgrm = 'https://api.telegram.org/file/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/'.$test['file_path'];
@@ -276,8 +276,11 @@ if($text){
 		
 		Бот может принимть mp4 файлы
 		Бот может принимает gif файлы
+		Бот может принимает изображения
 		В личку можно кидать файлы по одному или несколько сразу
 		файлы размером до 50 мб
+		
+		Можно переслать боту сообщение из чата с контентом
 		";
 	}
 	elseif ($text == "/statistic"|| $text == "/statistic@tigif_bot") {
