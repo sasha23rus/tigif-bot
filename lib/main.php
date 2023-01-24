@@ -66,8 +66,8 @@ class Main{
 	}
 
     //тест
-    public static function getSingleImageNEW($type=''){
-        return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` ="?s" AND `COUNT` = 0 ORDER BY RAND() LIMIT 1 ', strtoupper($type))->fetchAssoc();
+    public static function getSingleImageNEW($type='GIF'){
+        return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` ="?s" AND `FILE_ID` = "" ORDER BY RAND() LIMIT 1 ', strtoupper($type))->fetchAssoc();
     }
 
 	public static function DBrandomImgae($type='gif'){
@@ -194,7 +194,7 @@ class Main{
     	if ($action=='ban') {
     		$count--;
     		$db->query('UPDATE `GIF_TABLE` SET RAITING = "?i" WHERE ID = "?i"', $count, $id);
-    		if(self::getReiting($id, $action) > 2){
+    		if(self::getReiting($id, $action) >= 4){
 	    		$db->query('UPDATE `GIF_TABLE` SET ACTIVE = "0" WHERE ID = "?i"', $id);
     		}
     	}
@@ -213,7 +213,10 @@ class Main{
     	return $db->getAffectedRows();
 	}
     public static function setDeactive($id){
-        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "0" WHERE ID = "?i"', $id);
+        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "0", RAITING = "-1000" WHERE ID = "?i"', $id);
+    }
+	public static function setDeactiveNotOpen($id){
+        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "0", INFO = "NO_OPEN" WHERE ID = "?i"', $id);
     }
     public static function setActive($id){
         Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "1" WHERE ID = "?i"', $id);

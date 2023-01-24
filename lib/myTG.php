@@ -87,7 +87,7 @@ class tg{
                     //$telegram->sendMessage([ 'chat_id' => '153057273', 'text' => $pic_id." vardump \n" . json_encode($out) ]);
                     if ($out->error_code == 400) {
                         if ($repeat != 'mov'){
-                            Main::setDeactive($pic_id);
+                            Main::setDeactiveNotOpen($pic_id);
                         }
                         //if (!self::sendV2($endpoint, $type, $telegram, $img, $chat_id, $inlineKeyboardMarkup)) {
                             //повторители
