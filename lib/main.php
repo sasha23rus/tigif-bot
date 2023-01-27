@@ -61,20 +61,33 @@ class Main{
 		return $json;
 	}
 
-	public static function getSingleImage($type=''){
-		return self::DBrandomImgae($type);
+	public static function getSingleImage($type='', $repeat=0){
+		return self::DBrandomImgae($type, $repeat);
 	}
 
     //тест
-    public static function getSingleImageNEW($type='GIF'){
-        return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` ="?s" AND `FILE_ID` = "" ORDER BY RAND() LIMIT 1 ', strtoupper($type))->fetchAssoc();
+    public static function getSingleImageNEW($type='GIF', $repeat = 0){
+		if ($repeat){
+			return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` ="?s" AND `FILE_ID` != "" ORDER BY RAND() LIMIT 1 ', strtoupper($type))->fetchAssoc();
+		}else{
+        	return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` ="?s" AND `FILE_ID` = "" ORDER BY RAND() LIMIT 1 ', strtoupper($type))->fetchAssoc();
+		}
     }
 
-	public static function DBrandomImgae($type='gif'){
-		return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` ="?s" ORDER BY RAND() LIMIT 1', strtoupper($type))->fetchAssoc();
+	public static function DBrandomImgae($type='gif', $repeat = 0){
+		if ($repeat){
+			return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` ="?s" AND `FILE_ID` != "" ORDER BY RAND() LIMIT 1', strtoupper($type))->fetchAssoc();
+		}else{
+			return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` ="?s" ORDER BY RAND() LIMIT 1', strtoupper($type))->fetchAssoc();
+		}
 	}
-	public static function DBrandomContent(){
-		return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` != "MOV" ORDER BY RAND() LIMIT 1')->fetchAssoc();
+	public static function DBrandomContent($repeat = 0){
+		if ($repeat){
+			return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` != "MOV" AND `FILE_ID` != "" ORDER BY RAND() LIMIT 1')->fetchAssoc();
+		}else{
+			return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` != "MOV" ORDER BY RAND() LIMIT 1')->fetchAssoc();
+			
+		}
 	}
 
 	public static function addImage($type, $url, $info = ''){

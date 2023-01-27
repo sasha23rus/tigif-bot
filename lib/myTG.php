@@ -23,6 +23,9 @@ class tg{
     public static function localSend($img, $result, $telegram, $repeat = '', $caption = ''){
         $pic_id  =  $img['ID'];
         $chat_id =  $result["message"]["chat"]["id"];
+		if ($result["message"]['message_thread_id'] > 0){
+			$message_thread_id = $result["message"]['message_thread_id'];
+		}
 
         //если результатов больше нету
         if (!$img){
@@ -49,7 +52,12 @@ class tg{
             $type = 'video';
         }
 
-        $params = ['chat_id' => $chat_id, 'caption' =>$caption, $type => ($img['FILE_ID'])?$img['FILE_ID']:$img['URL']];
+        $params = [
+			'chat_id' => $chat_id,
+			'caption' =>$caption,
+			$type => ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
+			'message_thread_id'=>$message_thread_id
+		];
         if ($inlineKeyboardMarkup) $params['reply_markup'] = json_encode($inlineKeyboardMarkup);
 
         //отправка запроса
@@ -94,23 +102,22 @@ class tg{
                             if ($repeat) {
                                 //$telegram->sendMessage(['chat_id' => '153057273', 'text' => $pic_id . "Не удалось загрузить"]);
                                 if ($repeat == 'ngif') {
-                                    ngif($telegram, $chat_id);
+                                    ngif($telegram, 1);
                                 }
                                 if ($repeat == 'npic') {
                                     npic($telegram, $chat_id);
                                 }
                                 if ($repeat == 'gif') {
-                                    gif($telegram, $chat_id);
+                                    gif($telegram, 1);
                                 }
                                 if ($repeat == 'pic') {
                                     pic($telegram, $chat_id);
                                 }
                                 if ($repeat == 'rdm') {
-                                    rdm($telegram, $chat_id);
+                                    rdm($telegram, 1);
                                 }
                                 if ($repeat == 'mov') {
-                                    $telegram->sendMessage(['chat_id' => $chat_id, 'text' => "Файл слишком большой, можешь посмотреть по ссылке \n".$img['URL'], 'reply_markup' => json_encode($inlineKeyboardMarkup) ]);
-                                    //mov($telegram);
+                                    $telegram->sendMessage(['chat_id' => $chat_id, 'text' => "Файл слишком большой, можешь посмотреть по ссылке \n".$img['URL'],'message_thread_id'=>$message_thread_id, 'reply_markup' => json_encode($inlineKeyboardMarkup) ]);
                                 }
                             }
                         //}

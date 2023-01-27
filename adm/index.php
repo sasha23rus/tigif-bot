@@ -76,24 +76,27 @@ use Lib\Main;
 			}else{
 				?>
 				<h2>Результаты <?=count($img['items'])?:0?></h2>
-					<?
-					foreach ($img['items'] as $key => $value) {
-						?>
-						<div class="col-3 -add-pic-" data-key="<?=$key?>" >
-							<form class="form-dialog-content-<?=$key?>">
-							<div class="p-3 border bg-light">
-								<img src="<?=$value['link']?>" alt="" width="120px" class="-add-" style="cursor: pointer">
-							</div>
-							<input type="hidden" name="array_<?=$key?>" value='<?=json_encode($value)?>'>
-							<input type="radio" name="type" value="gif" <?=($type=='gif')?'checked':''?>>gif
-							<input type="radio" name="type" value="pic" <?=($type=='pic')?'checked':''?>>pic
-							<input type="hidden" name="query_search" value="<?=$q?>">
-							<div class="answer">&nbsp;</div>
-							</form>
-						</div>
+					<button class="btn btn-primary -add-all-" id="add_all">Добавить все</button>
+					<div id="result_list" class="row gy-3">
 						<?
-					}
-					?>
+						foreach ($img['items'] as $key => $value) {
+							?>
+							<div class="col-3 -add-pic-" data-key="<?=$key?>" >
+								<form class="form-dialog-content-<?=$key?>">
+								<div class="p-3 border bg-light">
+									<img src="<?=$value['link']?>" alt="" width="120px" class="-add-" style="cursor: pointer">
+								</div>
+								<input type="hidden" name="array_<?=$key?>" value='<?=json_encode($value)?>'>
+								<input type="radio" name="type" value="gif" <?=($type=='gif')?'checked':''?>>gif
+								<input type="radio" name="type" value="pic" <?=($type=='pic')?'checked':''?>>pic
+								<input type="hidden" name="query_search" value="<?=$q?>">
+								<div class="answer">&nbsp;</div>
+								</form>
+							</div>
+							<?
+						}
+						?>
+					</div>
 				<?
 			}
 		}
@@ -159,32 +162,44 @@ use Lib\Main;
 			if (!event.target.closest('.-add-')) return;
 		
 			const block = event.target.closest('.-add-pic-');
-			const key = block.getAttribute('data-key');
-			const answer = block.querySelector(".answer");
-
-			const form = document.querySelector(".form-dialog-content-"+key);
-			let url = "/adm/add_post.php";
-			answer.textContent = 'sending...';
-
-			const formData  = new FormData(form)
-				formData.append('key', key);
-			fetch(url,{
-				method:'POST',
-				body: formData
-			})
-			.then((response)=>response.json())
-			.then((result)=>{
-				console.log(result);
-				if(result.status === true){
-					answer.textContent = 'ok';
-				}else{
-					answer.textContent = 'err';
-					// document.getElementById("err_form").innerHTML = result.error;
-				}
-			})
+			add_content(block);
 		}
-	})
+		
+		if (event.target.closest('.-add-all-')){
+			if (!event.target.closest('.-add-all-')) return;
+			let childDivs = document.getElementById('result_list').getElementsByClassName('-add-pic-');
+
+			for( i=0; i< childDivs.length; i++ ) {
+				let block = childDivs[i];
+				add_content(block);
+			}
+		}
+	});
+	
+	function add_content(block){
+		const key = block.getAttribute('data-key');
+		const answer = block.querySelector(".answer");
+		const form = document.querySelector(".form-dialog-content-"+key);
+		let url = "/adm/add_post.php";
+		answer.textContent = 'sending...';
+	
+		const formData  = new FormData(form)
+			formData.append('key', key);
+		fetch(url,{method:'POST', body: formData})
+		.then((response)=>response.json())
+		.then((result)=>{
+			console.log(result);
+			if(result.status === true){
+				answer.textContent = 'ok';
+			}else{
+				answer.textContent = 'err';
+				// document.getElementById("err_form").innerHTML = result.error;
+			}
+		})
+	}
 })();
+
+
 </script>
 
 <?nextBTN($type, $q)?>

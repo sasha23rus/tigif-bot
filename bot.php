@@ -18,11 +18,12 @@ $chat_id = $result["message"]["chat"]["id"];
 $name = $result["message"]["from"]["username"];
 $uid = $result["message"]["from"]["id"];
 
+
 //$telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
 //die();
 
-if ($result["message"]["chat"]["type"]=="private"){
 	//$telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "принял " . json_encode($result) ]);
+if ($result["message"]["chat"]["type"]=="private"){
 	//бот принимает файлы
 	if ($result["message"]["video"]){
 		$test = $telegram->setAsyncRequest(false)->getFile(['file_id' => $result['message']['video']['file_id'] ]);
@@ -127,7 +128,6 @@ if ($result["message"]["chat"]["type"]=="private"){
 
     $telegram->sendMessage(['chat_id' => '153057273', 'text' => "getFile  " . json_encode($test) ]);*/
 }
-
 
 
 if($result["callback_query"]){
@@ -378,19 +378,17 @@ function top($telegram){
     $inlineKeyboardMarkup = array('inline_keyboard' => Main::TopBtns());
     $arAns = [ 'chat_id' => $chat_id, 'text' => "Лучшее из того что мы сами выбрали", 'reply_markup'=>json_encode($inlineKeyboardMarkup) ];
     $telegram->sendMessage($arAns);
-//    $img = Main::top();
-//    return tg::localSend($img, $result, $telegram, 'rdm');
 }
-function rdm($telegram): ?bool
+function rdm($telegram, $repeat = 0): ?bool
 {
     global $result;
-    $img = Main::DBrandomContent();
+    $img = Main::DBrandomContent($repeat);
     return tg::localSend($img, $result, $telegram, 'rdm');
 }
-function gif($telegram): ?bool
+function gif($telegram, $repeat = 0): ?bool
 {
     global $result;
-    $img = Main::getSingleImage("gif");
+    $img = Main::getSingleImage("gif", $repeat);
     return tg::localSend($img, $result, $telegram, 'gif');
 }
 function pic($telegram): ?bool
@@ -399,10 +397,10 @@ function pic($telegram): ?bool
     $img = Main::getSingleImage("pic");
     return tg::localSend($img, $result, $telegram, 'pic');
 }
-function ngif($telegram): ?bool
+function ngif($telegram, $repeat = 0): ?bool
 {
     global $result;
-    $img = Main::getSingleImageNEW("gif");
+    $img = Main::getSingleImageNEW("gif", $repeat);
     return tg::localSend($img, $result, $telegram, 'ngif');
 }
 function npic($telegram): ?bool
