@@ -42,7 +42,7 @@ use Lib\Main;
           <br>
           data-alt="(.+?)+?\.gif"
 
-          <form action="t.php">
+          <form action="index.php">
                 <div class="mb-3">
                     <label for="listFiles" class="form-label">Список файлов</label>
                     <textarea class="form-control" id="listFiles" name="addList" rows="3"></textarea>

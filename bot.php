@@ -116,17 +116,18 @@ if ($result["message"]["chat"]["type"]=="private"){
 		}
 	}
 	
+	//бот принимает ссылки
+	if ($result["message"]["entities"]){
+		$urlList = explode("\n", $result["message"]['text']);
+		/*Цикл не работает телега режет, поэтому добавляется только первый*/
+		foreach ($result["message"]["entities"] as $key => $type){
+			if($type["type"] == 'url'){
+				$url = stripcslashes($urlList[$key]);
+				if(addcontentbyurl($url, $telegram, $chat_id)) continue;
+			}
+		}
+	}
 	
-    /*$count = count($result['message']['photo'])-1;
-    $test = $telegram->setAsyncRequest(false)->getFile(['file_id' => $result['message']['photo'][$count]['file_id'] ]);
-    //Сохранить файл
-    $url = 'https://api.telegram.org/file/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/'.$test['file_path'];
-    $path = $_SERVER['DOCUMENT_ROOT'] . '/upload/'.$test['file_path'];
-    if(file_put_contents($path, file_get_contents($url))){
-        $telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
-    }
-
-    $telegram->sendMessage(['chat_id' => '153057273', 'text' => "getFile  " . json_encode($test) ]);*/
 }
 
 
@@ -237,7 +238,8 @@ if($result["callback_query"]){
 }
 
 $keyboard = [
-	["/gif", "/pic", "/rdm", "/game", "/help", '/X']
+	["/gif", "/pic", "/mov", "/rdm", "/game"],
+	["/ngif", "/npic", "/top", "/help", "/start", '/X']
 ];
 
 $double_commands=explode(" ", $text);
@@ -257,27 +259,36 @@ if($text){
         );
 	}
 	elseif ($text == "/help"    || $text == "/help@tigif_bot") {
-		$reply = "\n
-		/start - обновить бота
-		/help - помощь
-		/gif - получить гифку
-		/pic - получить картинку
-		/mov - получить видео
-		/rdm - случайно картинка или гифка
-		/add ССЫЛКА - добавить в бота gif/jpg/jpeg/png/mp4
-		/tipost - #Сиськопост
-		/sendpic ID - показать картинку/гифку по id
-		/game - пошлая цитата
-		/top - Лучшие по голосованию
-		/X - скрыть клавиатуру чтобы она снова отобразилась нажмите /start
-		
-		Бот может принимть mp4 файлы
-		Бот может принимает gif файлы
-		Бот может принимает изображения
-		В личку можно кидать файлы по одному или несколько сразу
-		файлы размером до 50 мб
-		
-		Можно переслать боту сообщение из чата с контентом
+		$reply = "
+			<b>Комманды:</b>
+			/start - обновить бота
+			/help - помощь
+			/gif - получить гифку
+			/pic - получить картинку
+			/mov - получить видео
+			/rdm - случайно картинка или гифка
+			/tipost - #Сиськопост
+			/sendpic ID - показать картинку/гифку по id
+			/game - пошлая цитата
+			/top - Лучшие по голосованию
+			/X - скрыть клавиатуру, чтобы она снова отобразилась нажмите /start
+			
+			<b>*Передать контент в бота*</b>
+			В приват сообщениях боту
+			
+			<u>файлы:</u>
+			Бот может принимть mp4 файлы
+			Бот может принимает gif файлы
+			Бот может принимает изображения
+			В личку можно кидать файлы по одному или несколько сразу
+			файлы размером до 20 мб
+			
+			<u>ссылки:</u>
+			В личку можно передать ссылку на gif/jpg/jpeg/png/mp4
+			по одной ссылке за раз
+			Максимальный размер файла 50мб
+			
+			<code>Или можно переслать боту сообщение из другого чата с контентом</code>
 		";
 	}
 	elseif ($text == "/statistic"|| $text == "/statistic@tigif_bot") {
@@ -327,36 +338,7 @@ if($text){
         $reply_markup = json_encode(['remove_keyboard' => true]);
 		$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'Кнопки отключены', 'reply_markup' => $reply_markup ]);
     }
-
-
-	//Добавление материала
-    elseif ($double_commands[0] == '/add'){
-        $validUrl = filter_var($double_commands[1], FILTER_VALIDATE_URL);
-        $type = false;
-        if ($validUrl){
-            $fileInfo = new SplFileInfo($validUrl);
-            if ($fileInfo->getExtension() == 'gif'){ $type = 'gif'; }
-            elseif (
-                $fileInfo->getExtension() == 'jpg'  ||
-                $fileInfo->getExtension() == 'jpeg' ||
-                $fileInfo->getExtension() == 'png'  ||
-                $fileInfo->getExtension() == 'webp'
-            ){ $type = 'pic'; }
-            elseif ($fileInfo->getExtension() == 'mp4'){ $type = 'mov';}
-            else{
-                $telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'ошибка: Формат файла не поддерживается']);
-            }
-            if ($type){
-                $add = Main::addImage($type, trim($double_commands[1]));
-                if ($add > 0) {
-                    $img = Main::getImageById($add);
-                    getIMG_send($telegram, $chat_id, $img);
-                }else{
-                    $telegram->sendMessage([ 'chat_id' => $chat_id, 'parse_mode'=> 'HTML', 'text' => 'ошибка: Файл уже есть']);
-                }
-            }
-        }
-    }
+	
 	elseif ($double_commands[0] == '/sendpic') {
         $id = intval($double_commands[1]);
 		$img = Main::getImageById($id);
@@ -366,7 +348,7 @@ if($text){
 
 	//обычные ответы
 	if ($reply) {
-		$arAns = [ 'chat_id' => $chat_id, 'text' => $reply];
+		$arAns = [ 'chat_id' => $chat_id, 'parse_mode'=> 'HTML', 'text' => $reply];
 		if ($reply_markup) $arAns['reply_markup']=$reply_markup;
 		$telegram->sendMessage($arAns);
 	}
@@ -514,6 +496,40 @@ function sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
     if ($ans) Main::setViewCount($pic_id);
 }
 
+function addcontentbyurl($url, $telegram, $chat_id) {
+	$validUrl = filter_var($url, FILTER_VALIDATE_URL);
+	$type = false;
+	if ($validUrl){
+		$fileInfo = new SplFileInfo($validUrl);
+		if ($fileInfo->getExtension() == 'gif'){ $type = 'gif'; }
+		elseif (
+			$fileInfo->getExtension() == 'jpg'  ||
+			$fileInfo->getExtension() == 'jpeg' ||
+			$fileInfo->getExtension() == 'png'  ||
+			$fileInfo->getExtension() == 'webp'
+		){ $type = 'pic'; }
+		elseif ($fileInfo->getExtension() == 'mp4'){ $type = 'mov';}
+		else{
+			$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'ошибка: Формат файла не поддерживается']);
+			return false;
+		}
+		if ($type){
+			$add = Main::addImage($type, trim($url));
+			if ($add > 0) {
+				$img = Main::getImageById($add);
+				getIMG_send($telegram, $chat_id, $img);
+				return true;
+			}else{
+				$telegram->sendMessage([ 'chat_id' => $chat_id, 'parse_mode'=> 'HTML', 'text' => 'ошибка: Файл уже есть']);
+				return false;
+			}
+		}
+	}else{
+		$telegram->sendMessage([ 'chat_id' => $chat_id, 'parse_mode'=> 'HTML', 'text' => 'ошибка: URL не подходит :(']);
+		return false;
+	}
+	
+}
 
 /*Примеры*/
 
