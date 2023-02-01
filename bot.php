@@ -217,22 +217,48 @@ if($result["callback_query"]){
                 if ($key == 1 ) $icon = "🥈";
                 if ($key == 2 ) $icon = "🥉";
                 $response = $telegram->setAsyncRequest(false)->uploadFile(
-                    'sendAnimation', ['chat_id' => $chat_id, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> $icon." место" ]
+                    'sendAnimation', ['chat_id' => $chat_id, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> $icon." место id:".$img['ID'] ]
                 );
             }
         }
         if ($action == 'pic_all'){
             $imgList = Main::getTopAll('PIC');
+			$caption = '';
             foreach ($imgList as $key => $img){
-                /*$response = $telegram->setAsyncRequest(false)->uploadFile(
-                    'sendAnimation', ['chat_id' => $from, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> "🏆 первое место" ]
-                );
-                if ($key > 0){
-                }*/
-				    $images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL']);
+				if ($key == 0 ) $icon = "🥇";
+                if ($key == 1 ) $icon = "🥈";
+                if ($key == 2 ) $icon = "🥉";
+				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL']);
+				$caption .= $icon." id: ".$img['ID']." ";
             }
+			$images[$key]['caption'] = $caption;
     		$telegram->sendmediagroup(['chat_id' => $chat_id, 'media' => json_encode($images)]);
-
+        }
+		
+		if ($action == 'gif_7'){
+            $imgList = Main::getTopWeek('GIF');
+            foreach ($imgList as $key => $img){
+                if ($key == 0 ) $icon = "🥇";
+                if ($key == 1 ) $icon = "🥈";
+                if ($key == 2 ) $icon = "🥉";
+                $response = $telegram->setAsyncRequest(false)->uploadFile(
+                    'sendAnimation', ['chat_id' => $chat_id, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> $icon." место /sendpic ".$img['ID'] ]
+                );
+            }
+        }
+		
+		if ($action == 'pic_7'){
+            $imgList = Main::getTopWeek('PIC');
+			$caption = '';
+            foreach ($imgList as $key => $img){
+				if ($key == 0 ) $icon = "🥇";
+                if ($key == 1 ) $icon = "🥈";
+                if ($key == 2 ) $icon = "🥉";
+				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL']);
+				$caption .= $icon." id: ".$img['ID']." ";
+            }
+			$images[$key]['caption'] = $caption;
+    		$telegram->sendmediagroup([ 'chat_id' => $chat_id, 'media' => json_encode($images) ]);
         }
     }
 }

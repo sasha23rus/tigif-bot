@@ -423,9 +423,16 @@ class Main{
         while($data = $result->fetchAssoc()){
 	    	$res[] = $data;
 	    }
-
 	    return $res;
     }
+	public static function getTopWeek($type)
+	{
+		$result = Main::DB()->query('SELECT * FROM `GIF_TABLE` WHERE `ACTIVE` = 1 AND `TYPE` = "?s" AND `DATE` > DATE_SUB(CURDATE(), INTERVAL 7 DAY) ORDER BY `RAITING` desc  LIMIT 3', $type);
+		while ($data = $result->fetchAssoc()) {
+			$res[] = $data;
+		}
+		return $res;
+	}
 
 }
 
