@@ -36,13 +36,9 @@ use Lib\Main;
           </form>
       </div>
       <div class="col-md-6">
-          https://nicetits.ru/gif/shikarnye-bolshie-siski?page=4
-          <br>
-          https://nicetits.ru/adult-videos?page=6
-          <br>
-          data-alt="(.+?)+?\.gif"
+          Разделитель ;
 
-          <form action="index.php">
+          <form action="index.php" method="post">
                 <div class="mb-3">
                     <label for="listFiles" class="form-label">Список файлов</label>
                     <textarea class="form-control" id="listFiles" name="addList" rows="3"></textarea>
@@ -102,8 +98,8 @@ use Lib\Main;
 		}
 		?>
 		
-		<?if(isset($_GET['addList'])){
-		  $addList = explode(';', $_GET['addList']);
+		<?if(isset($_POST['addList'])){
+		  $addList = explode(';', $_POST['addList']);
 		  foreach($addList as $pic){
 			  $validUrl = filter_var($pic, FILTER_VALIDATE_URL);
 			  if ($validUrl){
@@ -138,20 +134,6 @@ use Lib\Main;
 </div>
 <br>
 
-<!--<h2>test</h2>
-<div class="col-4 -add-pic-" data-key="0" >
-	
-	<form class="form-dialog-content-0">
-		<div class="p-3 border bg-light">
-			<img src="https://siski.name/uploads/posts/2021-11/1636824118_1-siski-name-p-porno-golie-devushki-srednie-siski-11.jpg" alt="" width="100px" class="-add-" style="cursor: pointer">
-		</div>
-		<input type="hidden" name="array_0" value="{&quot;kind&quot;:&quot;customsearch#result&quot;,&quot;title&quot;:&quot;\u0413\u043e\u043b\u044b\u0435 \u0434\u0435\u0432\u0443\u0448\u043a\u0438 \u0441\u0440\u0435\u0434\u043d\u0438\u0435 \u0441\u0438\u0441\u044c\u043a\u0438 (48 \u0444\u043e\u0442\u043e) - \u043f\u043e\u0440\u043d\u043e&quot;,&quot;htmlTitle&quot;:&quot;\u0413\u043e\u043b\u044b\u0435 \u0434\u0435\u0432\u0443\u0448\u043a\u0438 \u0441\u0440\u0435\u0434\u043d\u0438\u0435 <b>\u0441\u0438\u0441\u044c\u043a\u0438<\/b> (48 \u0444\u043e\u0442\u043e) - \u043f\u043e\u0440\u043d\u043e&quot;,&quot;link&quot;:&quot;https:\/\/siski.name\/uploads\/posts\/2021-11\/1636824118_1-siski-name-p-porno-golie-devushki-srednie-siski-11.jpg&quot;,&quot;displayLink&quot;:&quot;siski.name&quot;,&quot;snippet&quot;:&quot;\u0413\u043e\u043b\u044b\u0435 \u0434\u0435\u0432\u0443\u0448\u043a\u0438 \u0441\u0440\u0435\u0434\u043d\u0438\u0435 \u0441\u0438\u0441\u044c\u043a\u0438 (48 \u0444\u043e\u0442\u043e) - \u043f\u043e\u0440\u043d\u043e&quot;,&quot;htmlSnippet&quot;:&quot;\u0413\u043e\u043b\u044b\u0435 \u0434\u0435\u0432\u0443\u0448\u043a\u0438 \u0441\u0440\u0435\u0434\u043d\u0438\u0435 <b>\u0441\u0438\u0441\u044c\u043a\u0438<\/b> (48 \u0444\u043e\u0442\u043e) - \u043f\u043e\u0440\u043d\u043e&quot;,&quot;mime&quot;:&quot;image\/jpeg&quot;,&quot;fileFormat&quot;:&quot;image\/jpeg&quot;,&quot;image&quot;:{&quot;contextLink&quot;:&quot;https:\/\/siski.name\/13296-golye-devushki-srednie-siski-48-foto.html&quot;,&quot;height&quot;:911,&quot;width&quot;:1362,&quot;byteSize&quot;:388597,&quot;thumbnailLink&quot;:&quot;https:\/\/encrypted-tbn0.gstatic.com\/images?q=tbn:ANd9GcSZfiYqxTgf4g4sqhpLTLyYVVGQVA507K9RoLSotpkix7pqn95Snv8Y3Q&amp;s&quot;,&quot;thumbnailHeight&quot;:100,&quot;thumbnailWidth&quot;:150}}">
-		<input type="radio" name="type" value="gif">gif
-		<input type="radio" name="type" value="pic" checked="">pic
-		<input type="hidden" name="query_search" value="самые крутые сиськи">
-		<div class="answer">&nbsp;</div>
-	</form>
-</div>-->
 
 <script>
 (() => {

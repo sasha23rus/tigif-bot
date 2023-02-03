@@ -27,9 +27,6 @@ class Main{
 	 */
 	public static function getImage($query, $type, $start = 0){
 		$imgType = ($type=='pic')?'photo':'animated';
-        /*if (!$q){
-		    $q = ($type=='gif')?'Лучшие сиськи Gifs':'Голые красотки обои';
-        }*/
 		$queryParams = [
 		    'cx' 	=> '278b988d6545e4b27',
 		    'imgType' => $imgType,
@@ -116,7 +113,7 @@ class Main{
         $mov = Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` = "MOV"');
     	$mov_row = intval($mov->getNumRows());
 
-    	return array($gif_row, $pic_row, $mov_row, ($gif_row + $pic_row));
+    	return array($gif_row, $pic_row, $mov_row, ($gif_row + $pic_row+$mov_row));
 	}
 
 	public static function diagramm($gif, $pic){
@@ -136,6 +133,10 @@ class Main{
         $keyboard[] = array(
             'text'=>'⛔',
             'callback_data'=> self::setReitingBtn($pic_id, 'removenow')
+        );
+		$keyboard[] = array(
+            'text'=>'Next ➡',
+            'callback_data'=> implode("|",array('method'=>'next', 'id'=> $pic_id, 'action'=>'getnext'))
         );
         return $keyboard;
     }
@@ -432,6 +433,15 @@ class Main{
 			$res[] = $data;
 		}
 		return $res;
+	}
+	
+	public static function getNextContent($pic_id){
+		$res = Main::DB();
+		$nowContetnType = $res->query('SELECT `TYPE` FROM `GIF_TABLE` WHERE `ID` = "?i" LIMIT 1', $pic_id)->fetchAssoc()['TYPE'];
+		
+		$nextCotnten = $res->query('SELECT * FROM `GIF_TABLE` WHERE `ID` > "?i" AND `ACTIVE` = 1 AND `TYPE` = "'.$nowContetnType.'" LIMIT 1', $pic_id)->fetchAssoc();
+		
+		return $nextCotnten;
 	}
 
 }

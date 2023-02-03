@@ -189,7 +189,7 @@ if($result["callback_query"]){
             $img = Main::getImageById($id);
             $arInfo = unserialize($img['INFO']);
 
-            $info = "Ссылка на этот контент /sendpic ".$id;
+            $info = "Ссылка на этот контент /sendpic_".$id;
             if ($arInfo['title'])   $info .= "\n".$arInfo['title'];
             if ($arInfo['link'])    $info .= "\nСсылка на оригинал ".$arInfo['link'];
 			
@@ -217,7 +217,7 @@ if($result["callback_query"]){
                 if ($key == 1 ) $icon = "🥈";
                 if ($key == 2 ) $icon = "🥉";
                 $response = $telegram->setAsyncRequest(false)->uploadFile(
-                    'sendAnimation', ['chat_id' => $chat_id, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> $icon." место id:".$img['ID'] ]
+                    'sendAnimation', ['chat_id' => $chat_id, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> $icon." место /sendpic_".$img['ID'] ]
                 );
             }
         }
@@ -229,7 +229,7 @@ if($result["callback_query"]){
                 if ($key == 1 ) $icon = "🥈";
                 if ($key == 2 ) $icon = "🥉";
 				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL']);
-				$caption .= $icon." id: ".$img['ID']." ";
+				$caption .= $icon." /sendpic_".$img['ID']." ";
             }
 			$images[$key]['caption'] = $caption;
     		$telegram->sendmediagroup(['chat_id' => $chat_id, 'media' => json_encode($images)]);
@@ -242,7 +242,7 @@ if($result["callback_query"]){
                 if ($key == 1 ) $icon = "🥈";
                 if ($key == 2 ) $icon = "🥉";
                 $response = $telegram->setAsyncRequest(false)->uploadFile(
-                    'sendAnimation', ['chat_id' => $chat_id, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> $icon." место /sendpic ".$img['ID'] ]
+                    'sendAnimation', ['chat_id' => $chat_id, 'animation' => ($img['FILE_ID'])?:$img['URL'], 'caption'=> $icon." место /sendpic_".$img['ID'] ]
                 );
             }
         }
@@ -255,24 +255,29 @@ if($result["callback_query"]){
                 if ($key == 1 ) $icon = "🥈";
                 if ($key == 2 ) $icon = "🥉";
 				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL']);
-				$caption .= $icon." id: ".$img['ID']." ";
+				$caption .= $icon." /sendpic_".$img['ID']." ";
             }
 			$images[$key]['caption'] = $caption;
     		$telegram->sendmediagroup([ 'chat_id' => $chat_id, 'media' => json_encode($images) ]);
         }
     }
+	if ($callback_data[0]=="next") {
+		$now_id = $callback_data[1];
+		$img = Main::getNextContent($now_id);
+		getIMG_send($telegram, $chat_id, $img);
+	}
 }
 
 $keyboard = [
-	["/gif", "/pic", "/mov", "/rdm", "/game"],
-	["/ngif", "/npic", "/top", "/help", "/start", '/X']
+	["/gif", "/pic", "/mov", "/game", "/tipost", "/top", "❓", "▶", '✖']
 ];
 
 $double_commands=explode(" ", $text);
+$new_double_commands=explode("_",$text);
 
 if($text){
 
-	if($text == "/start"   || $text == "/start@tigif_bot") {
+	if($text == "/start"   		|| $text == "/start@tigif_bot"	|| $text == '▶') {
 	    Main::User($result["message"]["from"]); //сохраняем пользователя
 		$reply = "Привет ".$name." добро пожаловать в бота!";
 		$reply_markup = $telegram->replyKeyboardMarkup(
@@ -284,7 +289,7 @@ if($text){
             ]
         );
 	}
-	elseif ($text == "/help"    || $text == "/help@tigif_bot") {
+	elseif ($text == "/help"    || $text == "/help@tigif_bot"	|| $text == '❓') {
 		$reply = "
 			<b>Комманды:</b>
 			/start - обновить бота
@@ -333,14 +338,12 @@ if($text){
 	elseif ($text == "/tipost"  || $text == "/tipost@tigif_bot") {
 		$get = Main::getRandImages();
         $images = array();
+		$caption = "#сиськопост \nСcылки:\n";
 		foreach ($get as $key => $img) {
-			if ($key==0) {
-				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL'], "caption" => "#сиськопост");
-			}
-			else{
-				$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL']);
-			}
+			$images[] = array('type'=>'photo', 'media'=>($img['FILE_ID'])?:$img['URL']);
+			$caption .= '/sendpic_'.$img['ID']."\n";
 		}
+		$images[$key]['caption'] = $caption;
 		$telegram->sendmediagroup(['chat_id' => $chat_id, 'media' => json_encode($images)]);
 	}
 	elseif ($text == "/gif"     || $text == "/gif@tigif_bot" ) { gif($telegram); }
@@ -354,13 +357,13 @@ if($text){
 		$img = Main::DBrandomContent();
 		$pic_id = $img['ID'];
 		$user = $result["message"]["from"]['username'];
-		$caption = "@".$user." ".Main::getGameText();
+		$caption = "@".$user." ".Main::getGameText()."\n/sendpic_".$pic_id;
         tg::localSend($img, $result, $telegram, '', $caption);
 	}
-    elseif ( $text == '/id'      || $text == "/id@tigif_bot" ){
+    elseif ( $text == '/id'     || $text == "/id@tigif_bot" ){
 		$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'ID: '.$uid."\nChat: ".$chat_id ]);
     }
-    elseif ( $text == '/X'      || $text == "/X@tigif_bot" ){
+    elseif ( $text == '/X'      || $text == "/X@tigif_bot"		|| $text == '✖'){
         $reply_markup = json_encode(['remove_keyboard' => true]);
 		$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'Кнопки отключены', 'reply_markup' => $reply_markup ]);
     }
@@ -368,10 +371,13 @@ if($text){
 	elseif ($double_commands[0] == '/sendpic') {
         $id = intval($double_commands[1]);
 		$img = Main::getImageById($id);
-        //$telegram->sendMessage(['chat_id' => '153057273', 'text' => $img['ID']." ngif \n" . $img['URL']]);
 		getIMG_send($telegram, $chat_id, $img);
 	}
-
+	elseif ($new_double_commands[0] == '/sendpic') {
+		$id = intval($new_double_commands[1]);
+		$img = Main::getImageById($id);
+		getIMG_send($telegram, $chat_id, $img);
+	}
 	//обычные ответы
 	if ($reply) {
 		$arAns = [ 'chat_id' => $chat_id, 'parse_mode'=> 'HTML', 'text' => $reply];
@@ -429,9 +435,11 @@ function getIMG_send($telegram, $chat_id, $img): void
     $pic_id = $img['ID'];
     $result = $telegram->getWebhookUpdates();
     $from = $result["message"]["from"]['id'];
+	if(!$from) $from  = $result['callback_query']["from"]['id'];
 
     $keyboard = Main::reitingBtns($pic_id);
     if($from == 153057273) $keyboard[] = Main::AdminBtns($pic_id);
+	
 	$inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
 
 
