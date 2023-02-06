@@ -30,12 +30,8 @@ if ($result["message"]["chat"]["type"]=="private"){
 		$file_from_tgrm = 'https://api.telegram.org/file/bot5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE/'.$test['file_path'];
 		$path = $_SERVER["DOCUMENT_ROOT"].'/upload/'.stripcslashes($test['file_path']);
 		$move = copy($file_from_tgrm, $path);
-		//$telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "файл " . $file_from_tgrm ]);
-		//$telegram->sendMessage(['chat_id' => '153057273', 'parse_mode' => 'HTML', 'text' => "original_puth " . $siteurl ]);
 
 		if($move){
-			//$telegram->sendMessage(['chat_id' => '153057273', 'text' => "Успешно загружен" ]);
-			//$telegram->sendMessage(['chat_id' => '153057273', 'text' => "getFile  " . json_encode($test) ]);
 			$sendresult = array(
 				"info"=>array(
 					"title"=>"Добавлено пользователем",
@@ -52,7 +48,7 @@ if ($result["message"]["chat"]["type"]=="private"){
 				"mime_type"=>$result['message']['video']["mime_type"],
 				"file_size"=>$result['message']['video']["file_size"],
 			);
-			$id = Main::addContent("MOV", $sendresult);
+			$id = Main::addContent("MOV", $sendresult, $uid);
 			$img = Main::getImageById($id);
 			getIMG_send($telegram, $chat_id, $img);//отправляем результат
 		}else{
@@ -81,7 +77,7 @@ if ($result["message"]["chat"]["type"]=="private"){
 				"mime_type"=>$result['message']['animation']["mime_type"],
 				"file_size"=>$result['message']['animation']["file_size"],
 			);
-			$id = Main::addContent("GIF", $sendresult);
+			$id = Main::addContent("GIF", $sendresult, $uid);
 			$img = Main::getImageById($id);
 			getIMG_send($telegram, $chat_id, $img);//отправляем результат
 		}else{
@@ -108,7 +104,7 @@ if ($result["message"]["chat"]["type"]=="private"){
 				"file_id"=>$file_id,
 				"file_unique_id"=>$result['message']['photo'][count($result["message"]["photo"]) - 1]["file_unique_id"],
 			);
-			$id = Main::addContent("PIC", $sendresult);
+			$id = Main::addContent("PIC", $sendresult, $uid);
 			$img = Main::getImageById($id);
 			getIMG_send($telegram, $chat_id, $img);//отправляем результат
 		}else{
@@ -128,6 +124,11 @@ if ($result["message"]["chat"]["type"]=="private"){
 		}
 	}
 	
+	if (Main::IsAdmin($uid)){
+		if ($text == '/new'){
+			newcontent($telegram);
+		}
+	}
 }
 
 
@@ -154,6 +155,15 @@ if($result["callback_query"]){
                 'cache_time' 	=> 1
             ]);
         }
+		if ($action=='confirmnow'){
+			Main::setActive($id);
+			$telegram->answerCallbackQuery([
+                'callback_query_id' => $result["callback_query"]['id'],
+                'text' 			=> 'Активирован',
+                'show_alert' 	=> false,
+                'cache_time' 	=> 1
+            ]);
+		}
         //проверка, голосовал ли пользователь
         if ($action!='info' &&  $action!='removenow') {
             if(Main::CheckReiting($id, $from) > 0){
@@ -195,7 +205,7 @@ if($result["callback_query"]){
 			
             $telegram->answerCallbackQuery([
                 'callback_query_id' => $result["callback_query"]['id'],
-                'text' 			=> 'Отправить в группе /sendpic '.$id,
+                'text' 			=> 'Поделиться /sendpic_'.$id,
                 'show_alert' 	=> false,
                 'cache_time' 	=> 1
             ]);
@@ -266,10 +276,15 @@ if($result["callback_query"]){
 		$img = Main::getNextContent($now_id);
 		getIMG_send($telegram, $chat_id, $img);
 	}
+	if ($callback_data[0]=='previous'){
+		$now_id = $callback_data[1];
+		$img = Main::getPreContent($now_id);
+		getIMG_send($telegram, $chat_id, $img);
+	}
 }
 
 $keyboard = [
-	["/gif", "/pic", "/mov", "/game", "/tipost", "/top", "❓", "▶", '✖']
+	["/gif", "/pic", "/mov", "/game", "/tipost", "/top", "❓", '✖']
 ];
 
 $double_commands=explode(" ", $text);
@@ -279,13 +294,25 @@ if($text){
 
 	if($text == "/start"   		|| $text == "/start@tigif_bot"	|| $text == '▶') {
 	    Main::User($result["message"]["from"]); //сохраняем пользователя
-		$reply = "Привет ".$name." добро пожаловать в бота!";
+		$reply = "🔞<b>Внимание!</b>🔞\n\n";
+		$reply .= "Данный бот содержит материалы эротичесского характера, и предназначен только для лиц достигших 18 лет\nЕсли вам нету 18 пожалуйста покиньте данный бот\n\n";
+		$reply .= "<b>Ti bot</b> - это новый формат предоставления контента, пользователь теперь сам выбирает какой контент и сколько он хочет смотреть.";
 		$reply_markup = $telegram->replyKeyboardMarkup(
             [
                 'keyboard' => $keyboard,
                 'resize_keyboard' => true, //адекватные маленькие кнопки
                 'one_time_keyboard' => false, //кнопки не пропадают после вызова команды
                 //"selective"=>true, //так и не понял
+            ]
+        );
+	}
+	elseif ($text == '/show'){
+		$reply = "Кнопки включены";
+		$reply_markup = $telegram->replyKeyboardMarkup(
+            [
+                'keyboard' => $keyboard,
+                'resize_keyboard' => true, //адекватные маленькие кнопки
+                'one_time_keyboard' => false, //кнопки не пропадают после вызова команды
             ]
         );
 	}
@@ -302,7 +329,7 @@ if($text){
 			/sendpic ID - показать картинку/гифку по id
 			/game - пошлая цитата
 			/top - Лучшие по голосованию
-			/X - скрыть клавиатуру, чтобы она снова отобразилась нажмите /start
+			/X - скрыть клавиатуру, чтобы она снова отобразилась нажмите /show
 			
 			<b>*Передать контент в бота*</b>
 			В приват сообщениях боту
@@ -386,6 +413,11 @@ if($text){
 	}
 }
 
+function newcontent($telegram){
+    global $result;
+    $img = Main::getNewContent();
+    return tg::localSend($img, $result, $telegram, 'new');
+}
 function top($telegram){
     global $result;
     $chat_id = $result["message"]["chat"]["id"];
@@ -454,14 +486,18 @@ function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
         $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
         return;
     }
-
+	$result = $telegram->getWebhookUpdates();
+	if ($result["message"]['message_thread_id'] > 0){
+		$message_thread_id = $result["message"]['message_thread_id'];
+	}
     $response = $telegram->setAsyncRequest(false)->uploadFile(
         'sendAnimation',
         [
             'chat_id' 	=> $chat_id,
             'animation'	=> ($img['FILE_ID'])?:$img['URL'],
             'caption'   =>$caption,
-            'reply_markup' => json_encode($inlineKeyboardMarkup)
+            'reply_markup' => json_encode($inlineKeyboardMarkup),
+			'message_thread_id' => $message_thread_id
 	    ]
     );
 
@@ -485,13 +521,17 @@ function sendpic($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
         return;
     }
 
+	if ($result["message"]['message_thread_id'] > 0){
+		$message_thread_id = $result["message"]['message_thread_id'];
+	}
+	
     $response = $telegram->setAsyncRequest(false)->sendPhoto([
 		'chat_id' 	=> $chat_id,
 		'photo'		=> ($img['FILE_ID'])?:$img['URL'],
         'caption'   =>$caption,
-		'reply_markup' => json_encode($inlineKeyboardMarkup)
+		'reply_markup' => json_encode($inlineKeyboardMarkup),
+		'message_thread_id' => $message_thread_id
 	]);
-
     $count = count($result['message']['photo'])-1;
     $ans = $response["photo"][$count]['file_id'];
     if (!$img['FILE_ID']) {
@@ -510,11 +550,15 @@ function sendmov($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
         $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
         return;
     }
+	if ($result["message"]['message_thread_id'] > 0){
+		$message_thread_id = $result["message"]['message_thread_id'];
+	}
     $response = $telegram->setAsyncRequest(false)->sendVideo([
 		'chat_id' 	=> $chat_id,
 		'video'		=> ($img['FILE_ID'])?:$img['URL'],
         'caption'   =>$caption,
-		'reply_markup' => json_encode($inlineKeyboardMarkup)
+		'reply_markup' => json_encode($inlineKeyboardMarkup),
+		'message_thread_id' => $message_thread_id
 	]);
     $ans = $response["video"]['file_id'];
     if (!$img['FILE_ID']) {
@@ -548,7 +592,9 @@ function addcontentbyurl($url, $telegram, $chat_id) {
 			return false;
 		}
 		if ($type){
-			$add = Main::addImage($type, trim($url));
+			$uid = $chat_id;
+			$adm = Main::IsAdmin($uid);
+			$add = Main::addImage($type, trim($url), false, $adm);
 			if ($add > 0) {
 				$img = Main::getImageById($add);
 				getIMG_send($telegram, $chat_id, $img);

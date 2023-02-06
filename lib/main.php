@@ -10,14 +10,12 @@ use Diagram\dia;
 
 class Main{
 
-	private $pdo;
-
 	public static function DB(){
 		return Mysql::create("localhost", "sasha23_tibot", "ssU6p9jM")
-		      ->setErrorMessagesLang('ru')
-		      ->setDatabaseName("sasha23_tibot")
-		      ->setCharset("utf8")
-		      ->setStoreQueries(false);
+		->setErrorMessagesLang('ru')
+		->setDatabaseName("sasha23_tibot")
+		->setCharset("utf8")
+		->setStoreQueries(false);
 	}
 
 	/**
@@ -80,20 +78,24 @@ class Main{
 	}
 	public static function DBrandomContent($repeat = 0){
 		if ($repeat){
-			return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` != "MOV" AND `FILE_ID` != "" ORDER BY RAND() LIMIT 1')->fetchAssoc();
+			return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `FILE_ID` != "" ORDER BY RAND() LIMIT 1')->fetchAssoc();
 		}else{
-			return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` != "MOV" ORDER BY RAND() LIMIT 1')->fetchAssoc();
+			return Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 ORDER BY RAND() LIMIT 1')->fetchAssoc();
 			
 		}
 	}
 
-	public static function addImage($type, $url, $info = ''){
+	public static function addImage($type, $url, $info = '', $adm = ''){
 		if (!self::checkIMGinBase($url) > 0) {
 			$data = array(
 				'ACTIVE' => 1,
 				'URL' => $url,
 				'TYPE' => strtoupper($type)
 			);
+			if (!$adm){
+				$data['ACTIVE'] = 0;
+				$data['USER_CONFIRM'] = 0;
+			}
 			if ($info)
 				$data['INFO'] = serialize($info);
 
@@ -116,20 +118,25 @@ class Main{
     	return array($gif_row, $pic_row, $mov_row, ($gif_row + $pic_row+$mov_row));
 	}
 
-	public static function diagramm($gif, $pic){
-		$instance = new dia();
-		return $instance->generate(array('3aad00'=>$gif, 'f10d0d'=>$pic));
-	}
-
 	public static function setReitingBtn($pic_id, $action){
 		$arData = array(
-		          	'method'=>'reitng',
-		          	'id'=> $pic_id,
-		          	'action'=>$action
-		          );
+			'method'=>'reitng',
+			'id'=> $pic_id,
+			'action'=>$action
+		);
 		return implode("|",$arData);
 	}
-    public static function AdminBtns($pic_id){
+    public static function AdminBtns($pic_id, $new = ''){
+		$keyboard[] = array(
+            'text'=>'⬅️Prev',
+            'callback_data'=> implode("|",array('method'=>'previous', 'id'=> $pic_id, 'action'=>'getprev'))
+        );
+		if($new){
+			$keyboard[] = array(
+				'text'=>'🆗',
+				'callback_data'=> self::setReitingBtn($pic_id, 'confirmnow')
+			);
+		}
         $keyboard[] = array(
             'text'=>'⛔',
             'callback_data'=> self::setReitingBtn($pic_id, 'removenow')
@@ -196,7 +203,7 @@ class Main{
 			'USER_ID' => $from,
 			'ACTION' => $action
 		);
-        if ($action!='info' && $action!='removenow') $db->query('INSERT INTO `RAITING` SET ?As', $data);
+        if ($action!='info' && $action!='removenow' && $action!='confirmnow') $db->query('INSERT INTO `RAITING` SET ?As', $data);
 
 
     	$img = self::getImageById($id);
@@ -227,13 +234,13 @@ class Main{
     	return $db->getAffectedRows();
 	}
     public static function setDeactive($id){
-        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "0", RAITING = "-1000" WHERE ID = "?i"', $id);
+        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "0", RAITING = "-1000", USER_CONFIRM = "1" WHERE ID = "?i"', $id);
     }
 	public static function setDeactiveNotOpen($id){
-        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "0", INFO = "NO_OPEN" WHERE ID = "?i"', $id);
+        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "0", INFO = "NO_OPEN", USER_CONFIRM = "1" WHERE ID = "?i"', $id);
     }
     public static function setActive($id){
-        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "1" WHERE ID = "?i"', $id);
+        Main::DB()->query('UPDATE `GIF_TABLE` SET ACTIVE = "1", USER_CONFIRM = "1" WHERE ID = "?i"', $id);
     }
 
 	public static function getReiting($id, $action){
@@ -284,7 +291,7 @@ class Main{
 		if(!self::SearchUser($array['id'])){
 			self::AddUser($array);
 		}
-		return;
+		return true;
 	}
 	public static function SearchUser($id)
 	{
@@ -327,8 +334,10 @@ class Main{
 		$res->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
 		return $res->getLastInsertId();
 	}*/
-	public static function addContent($type, $sendresult){
-		
+	public static function addContent($type, $sendresult, $uid){
+		if ($uid == '153057273') {
+			$admin = 'Y';
+		}
 		$res = Main::DB();
 		$dataFile = array(
 			'file_id' => $sendresult['file_id'],
@@ -352,6 +361,10 @@ class Main{
 			'FILE_ID'=>$sendresult['file_id'],
 			'FILE'=>$id
 		);
+		if ($admin != 'Y'){
+			$data['ACTIVE'] = 0;
+			$data['USER_CONFIRM'] = 0;
+		}
 		$res->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
 		return $res->getLastInsertId();
 	}
@@ -420,7 +433,7 @@ class Main{
 	    return $keyboard;
     }
     public static function getTopAll($type){
-        $result =  Main::DB()->query('SELECT * FROM `GIF_TABLE` WHERE `ACTIVE` = 1 AND `TYPE` = "?s" ORDER BY `RAITING` desc  LIMIT 3', $type);
+        $result =  Main::DB()->query('SELECT * FROM `GIF_TABLE` WHERE `ACTIVE` = 1 AND `TYPE` = "?s" ORDER BY `RAITING` DESC  LIMIT 3', $type);
         while($data = $result->fetchAssoc()){
 	    	$res[] = $data;
 	    }
@@ -442,6 +455,28 @@ class Main{
 		$nextCotnten = $res->query('SELECT * FROM `GIF_TABLE` WHERE `ID` > "?i" AND `ACTIVE` = 1 AND `TYPE` = "'.$nowContetnType.'" LIMIT 1', $pic_id)->fetchAssoc();
 		
 		return $nextCotnten;
+	}
+	public static function getPreContent($pic_id){
+		$res = Main::DB();
+		$nowContetnType = $res->query('SELECT `TYPE` FROM `GIF_TABLE` WHERE `ID` = "?i" LIMIT 1', $pic_id)->fetchAssoc()['TYPE'];
+		
+		$nextCotnten = $res->query('SELECT * FROM `GIF_TABLE` WHERE `ID` < "?i" AND `ACTIVE` = 1 AND `TYPE` = "'.$nowContetnType.'" ORDER BY `ID` DESC LIMIT 1', $pic_id)->fetchAssoc();
+		
+		return $nextCotnten;
+	}
+	
+	public static function IsAdmin($uid){
+		if( $uid == '153057273' ){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	public static function getNewContent(){
+		$res = Main::DB();
+		$newCotntent = $res->query('SELECT * FROM `GIF_TABLE` WHERE `USER_CONFIRM` = 0 AND `ACTIVE` = 0 ORDER BY `ID` ASC LIMIT 1')->fetchAssoc();
+		return $newCotntent;
 	}
 
 }

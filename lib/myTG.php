@@ -35,7 +35,13 @@ class tg{
 
         if ($repeat){
             $keyboard = Main::reitingBtns($pic_id);
-            if($chat_id == 153057273) $keyboard[] = Main::AdminBtns($pic_id);
+            if($chat_id == 153057273) {
+				if ($img['USER_CONFIRM']==0){
+					$keyboard[] = Main::AdminBtns($pic_id, 'Y');
+				}else {
+					$keyboard[] = Main::AdminBtns($pic_id);
+				}
+			}
             $inlineKeyboardMarkup = array('inline_keyboard' => $keyboard);
         }
 
@@ -55,8 +61,8 @@ class tg{
         $params = [
 			'chat_id' => $chat_id,
 			'caption' =>$caption,
-			$type => ($img['FILE_ID'])?$img['FILE_ID']:$img['URL'],
-			'message_thread_id'=>$message_thread_id
+			'message_thread_id'=>$message_thread_id,
+			$type => ($img['FILE_ID'])?$img['FILE_ID']:$img['URL']
 		];
         if ($inlineKeyboardMarkup) $params['reply_markup'] = json_encode($inlineKeyboardMarkup);
 
@@ -73,7 +79,6 @@ class tg{
         //обработка ответа
         if (!$img['FILE_ID']){
 
-            //$telegram->sendMessage([ 'chat_id' => '153057273', 'text' => $pic_id." vardump \n" . json_encode($out) ]);
             if ($img['TYPE']=='PIC'){
                 $arFile = (array) $out->result->photo;
                 $count = count($arFile)-1;
