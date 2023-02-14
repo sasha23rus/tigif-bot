@@ -284,7 +284,7 @@ if($result["callback_query"]){
 }
 
 $keyboard = [
-	["/gif", "/pic", "/mov", "/game", "/tipost", "/top", "❓", '✖']
+	["/gif", "/pic", "/mov", "/game", "/tipost", "🔝", "💵", "❓", '✖']
 ];
 
 $double_commands=explode(" ", $text);
@@ -330,6 +330,8 @@ if($text){
 			/game - пошлая цитата
 			/top - Лучшие по голосованию
 			/X - скрыть клавиатуру, чтобы она снова отобразилась нажмите /show
+			
+			<b>/donate - поддержите проект</b>
 			
 			<b>*Передать контент в бота*</b>
 			В приват сообщениях боту
@@ -379,7 +381,7 @@ if($text){
 	elseif ($text == '/ngif'    || $text == "/ngif@tigif_bot") { ngif($telegram);}
     elseif ($text == '/npic'    || $text == "/npic@tigif_bot") { npic($telegram);}
     elseif ($text == '/rdm'     || $text == "/rdm@tigif_bot" ) { rdm($telegram); }
-    elseif ($text == "/top"     || $text == "/top@tigif_bot")  { top($telegram); }
+    elseif ($text == "/top"     || $text == "/top@tigif_bot"	|| $text == '🔝')  { top($telegram); }
 	elseif ($text == "/game"    || $text == "/game@tigif_bot") {
 		$img = Main::DBrandomContent();
 		$pic_id = $img['ID'];
@@ -394,6 +396,20 @@ if($text){
         $reply_markup = json_encode(['remove_keyboard' => true]);
 		$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => 'Кнопки отключены', 'reply_markup' => $reply_markup ]);
     }
+	elseif ( $text == '/donate' || $text == "/donate@tigif_bot" || $text == '💵'){
+		if ($result["message"]['message_thread_id'] > 0){
+			$message_thread_id = $result["message"]['message_thread_id'];
+		}
+		$caption = "Вы можете пожертвовать на развите проекта https://yoomoney.ru/fundraise/vuYQHAGPXGc.230206";
+//		$telegram->sendMessage([ 'chat_id' => $chat_id, 'text' => $reply_t, 'photo'		=> 'AgACAgIAAxkBAAJx6mPgxvLB_NpEQ-UMbUX2Oy3jQXDPAAIdwjEbcUcJSykN01f1gnjaAQADAgADbQADLgQ', ]);
+		$params = [
+			'chat_id' => $chat_id,
+			'caption' =>$caption,
+			'message_thread_id'=>$message_thread_id,
+			"photo"=>'AgACAgIAAxkBAAJx6mPgxvLB_NpEQ-UMbUX2Oy3jQXDPAAIdwjEbcUcJSykN01f1gnjaAQADAgADbQADLgQ',
+		];
+		tg::sendTG("sendPhoto", $params);
+	}
 	
 	elseif ($double_commands[0] == '/sendpic') {
         $id = intval($double_commands[1]);

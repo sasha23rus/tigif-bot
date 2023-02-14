@@ -85,27 +85,7 @@ class Main{
 		}
 	}
 
-	public static function addImage($type, $url, $info = '', $adm = ''){
-		if (!self::checkIMGinBase($url) > 0) {
-			$data = array(
-				'ACTIVE' => 1,
-				'URL' => $url,
-				'TYPE' => strtoupper($type)
-			);
-			if (!$adm){
-				$data['ACTIVE'] = 0;
-				$data['USER_CONFIRM'] = 0;
-			}
-			if ($info)
-				$data['INFO'] = serialize($info);
 
-            $res = Main::DB();
-            $res->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
-	    	return $res->getLastInsertId();
-		}else{
-			return 'double';
-		}
-	}
 
 	public static function getFullStatistic(){
 		$gif = Main::DB()->query('SELECT * FROM `GIF_TABLE` where `ACTIVE` = 1 AND `TYPE` = "GIF"');
@@ -334,6 +314,28 @@ class Main{
 		$res->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
 		return $res->getLastInsertId();
 	}*/
+	public static function addImage($type, $url, $info = '', $adm = ''){
+		if (!self::checkIMGinBase($url) > 0) {
+			$data = array(
+				'ACTIVE' => 1,
+				'URL' => $url,
+				'TYPE' => strtoupper($type),
+				'USER_CONFIRM' => 1
+			);
+			if (!$adm){
+				$data['ACTIVE'] = 0;
+				$data['USER_CONFIRM'] = 0;
+			}
+			if ($info)
+				$data['INFO'] = serialize($info);
+
+            $res = Main::DB();
+            $res->query('INSERT INTO `GIF_TABLE` SET ?As', $data);
+	    	return $res->getLastInsertId();
+		}else{
+			return 'double';
+		}
+	}
 	public static function addContent($type, $sendresult, $uid){
 		if ($uid == '153057273') {
 			$admin = 'Y';
@@ -358,8 +360,9 @@ class Main{
 			'URL' => $sendresult["info"]["link"],
 			'INFO' => serialize($sendresult["info"]),
 			'TYPE' => strtoupper($type),
-			'FILE_ID'=>$sendresult['file_id'],
-			'FILE'=>$id
+			'FILE_ID'=> $sendresult['file_id'],
+			'FILE'=> $id,
+			'USER_CONFIRM'=> 1
 		);
 		if ($admin != 'Y'){
 			$data['ACTIVE'] = 0;

@@ -10,7 +10,7 @@ $key = $_REQUEST['key'];
 $type = $_REQUEST['type'];
 $value =  (array) json_decode($_REQUEST['array_'.$key]);
 $value['query_search'] = $_REQUEST['query_search'];
-$x = Main::addImage($type, $value['link'], $value);
+$x = Main::addImage($type, $value['link'], $value, 'Y');
 if (intval($x)>0){
 	$return = array('status'=>true, 'out'=>$value);
 }else{

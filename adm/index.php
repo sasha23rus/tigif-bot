@@ -100,7 +100,12 @@ use Lib\Main;
 		
 		<?if(isset($_POST['addList'])){
 		  $addList = explode(';', $_POST['addList']);
+		  echo "<pre>";
+		  print_r($addList);
+		  echo "</pre>";
+		  
 		  foreach($addList as $pic){
+			  $pic = trim($pic);
 			  $validUrl = filter_var($pic, FILTER_VALIDATE_URL);
 			  if ($validUrl){
 				  $fileInfo = new SplFileInfo($validUrl);
