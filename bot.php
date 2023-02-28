@@ -526,6 +526,34 @@ function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $cap
 
     if (!$img['FILE_ID'] && !$ans){
          $telegram->sendMessage(['chat_id' => $chat_id, 'text' => "Не смог открыть id #".$pic_id."\n".$img['URL']]);
+		 /*
+		  // Путь к исходному GIF-изображению
+$source_path = 'path/to/source.gif';
+
+// Путь для сохранения сжатого GIF-изображения
+$destination_path = 'path/to/destination.gif';
+
+// Загружаем GIF-изображение
+$source_image = imagecreatefromgif($source_path);
+
+// Создаем новое изображение с теми же размерами, что и исходное
+$destination_image = imagecreatetruecolor(imagesx($source_image), imagesy($source_image));
+
+// Копируем исходное изображение в новое изображение
+imagecopy($destination_image, $source_image, 0, 0, 0, 0, imagesx($source_image), imagesy($source_image));
+
+// Сжимаем GIF-изображение
+imagegif($destination_image, $destination_path, 70);
+
+// Освобождаем память
+imagedestroy($source_image);
+imagedestroy($destination_image);
+		 */
+		/*
+		 * В этом примере мы используем функцию imagecreatefromgif() для загрузки исходного GIF-изображения, функцию imagecreatetruecolor() для создания нового изображения с теми же размерами, что и исходное, функцию imagecopy() для копирования исходного изображения в новое изображение, и функцию imagegif() для сохранения сжатого GIF-изображения. Кроме того, мы освобождаем память, используемую изображениями, с помощью функции imagedestroy().
+
+Заметьте, что в функции imagegif() мы передаем в качестве третьего параметра качество изображения (от 0 до 100). В этом примере мы используем значение 70, которое обычно дает хороший результат с точки зрения соотношения качества и размера файла, но вы можете изменить это значение в зависимости от ваших потребностей.
+		 */
     }
     if ($ans) Main::setViewCount($pic_id);
 }

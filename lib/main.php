@@ -177,16 +177,17 @@ class Main{
 	public static function setReiting($id, $from, $action, $file)
 	{
 		$db = Main::DB();
+    	$img = self::getImageById($id);
 
 		$data = array(
 			'ID_PIC' => $id,
 			'USER_ID' => $from,
-			'ACTION' => $action
+			'ACTION' => $action,
+			'TYPE' => $img['TYPE']
 		);
         if ($action!='info' && $action!='removenow' && $action!='confirmnow') $db->query('INSERT INTO `RAITING` SET ?As', $data);
 
 
-    	$img = self::getImageById($id);
     	$count = intval($img['RAITING']);
     	if (!$img['FILE_ID']) {
 			self::setImageFileID($id, $file);
@@ -268,10 +269,13 @@ class Main{
 	 */
 	public static function User($array)
 	{
-		if(!self::SearchUser($array['id'])){
+		$userId = self::SearchUser(intval($array['id']));
+		if($userId > 0){
+			return false;
+		}else{
 			self::AddUser($array);
+			return true;
 		}
-		return true;
 	}
 	public static function SearchUser($id)
 	{
