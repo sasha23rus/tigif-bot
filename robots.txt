@@ -4,8 +4,12 @@ Disallow: /assets/
 Disallow: /lib/
 Disallow: /test/
 Disallow: /vendor/
+Disallow: /upload/
 Disallow: /t.php
 Disallow: /t2.php
 Disallow: /bot.php
+Disallow: /getfile.php
+Disallow: /composer.json
+Disallow: /composer.lock
 Disallow: /getfile.php
 Allow: /
