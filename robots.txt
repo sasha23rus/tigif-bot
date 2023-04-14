@@ -8,3 +8,4 @@ Disallow: /t.php
 Disallow: /t2.php
 Disallow: /bot.php
 Disallow: /getfile.php
+Allow: /

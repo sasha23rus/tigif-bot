@@ -284,7 +284,7 @@ if($result["callback_query"]){
 }
 
 $keyboard = [
-	["/gif", "/pic", "/mov", "/game", "/tipost", "🔝", "💵", "❓", '✖']
+	["/gif", "/rdm", "/tipost", "🔝", "💵", "❓", '✖']
 ];
 
 $double_commands=explode(" ", $text);
