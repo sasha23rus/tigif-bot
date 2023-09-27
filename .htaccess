@@ -1,3 +1,7 @@
 php_flag display_startup_errors on
 php_flag display_errors on
 php_flag html_errors on
+
+#RewriteEngine on
+#RewriteRule https://ti-bot.ru/([a-z]+)/? /index.php?t=$1&id=$2 [L]
+#RewriteRule ^([a-z]+)/([0-9]+)/? /index.php?t=$1&id=$2 [L]

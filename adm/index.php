@@ -49,7 +49,7 @@ use Lib\Main;
           </form>
 		  Регулярно добавляются, можно брать
 		  <ul>
-			  <li><a href="https://whatboyswant.com/forums/babes/famous-babes/flash-drop-reveal-boobs-gifs--168406?page=15" target="_blank">https://whatboyswant.com/forums/babes/famous-babes/flash-drop-reveal-boobs-gifs--168406?page=15</a></li>
+			  <li><a href="https://whatboyswant.com/forums/babes/famous-babes/flash-drop-reveal-boobs-gifs--168406?page=17" target="_blank">https://whatboyswant.com/forums/babes/famous-babes/flash-drop-reveal-boobs-gifs--168406?page=17</a></li>
 		  </ul>
       </div>
 
@@ -57,92 +57,97 @@ use Lib\Main;
 </div>
 
 <!--результаты поиска-->
-<?nextBTN($type, $q)?>
-<br>
-<div class="container overflow-hidden text-center">
-	<div class="row gy-5">
-		<?
-		// $img = Main::getImage(false, intval($_GET['i']));
-		if ($q){
-			$img = Main::getImage((string) $q, $type, intval($_GET['i']));
-			if (isset($img['error'])) {
-				?>
-				<h2>Ошибка</h2>
-				<div class="alert alert-danger">
-					<? var_dump($img); ?>
-				</div>
-				<div class="alert alert-danger">
-					<?=$img['error']['message']?><br>
-				</div>
-				<?
-			}else{
-				?>
-				<h2>Результаты <?=count($img['items'])?:0?></h2>
-					<button class="btn btn-primary -add-all-" id="add_all">Добавить все</button>
-					<div id="result_list" class="row gy-3">
-						<?
-						foreach ($img['items'] as $key => $value) {
-							?>
-							<div class="col-3 -add-pic-" data-key="<?=$key?>" >
-								<form class="form-dialog-content-<?=$key?>">
-								<div class="p-3 border bg-light">
-									<img src="<?=$value['link']?>" alt="" width="270px" class="-add-" style="cursor: pointer">
-								</div>
-								<input type="hidden" name="array_<?=$key?>" value='<?=json_encode($value)?>'>
-								<input type="radio" name="type" value="gif" <?=($type=='gif')?'checked':''?>>gif
-								<input type="radio" name="type" value="pic" <?=($type=='pic')?'checked':''?>>pic
-								<input type="hidden" name="query_search" value="<?=$q?>">
-								<div class="answer">&nbsp;</div>
-								</form>
-							</div>
-							<?
-						}
-						?>
+<section class="text-center container-fluid">
+	<?nextBTN($type, $q)?>
+	<br>
+	<div class="container overflow-hidden text-center">
+		<div class="row gy-5">
+			<?
+			// $img = Main::getImage(false, intval($_GET['i']));
+			if ($q){
+				$img = Main::getImage((string) $q, $type, intval($_GET['i']));
+				if (isset($img['error'])) {
+					?>
+					<h2>Ошибка</h2>
+					<div class="alert alert-danger">
+						<? var_dump($img); ?>
 					</div>
-				<?
+					<div class="alert alert-danger">
+						<?=$img['error']['message']?><br>
+					</div>
+					<?
+				}else{
+					?>
+					<h2>Результаты <?=count($img['items'])?:0?></h2>
+						<button class="btn btn-primary -add-all-" id="add_all">Добавить все</button>
+						<div id="result_list" class="row gy-3">
+							<?
+							foreach ($img['items'] as $key => $value) {
+								$description = json_encode($value);
+								//$description = preg_replace('"', '', $description);
+								$description = stripcslashes($description);
+								?>
+								<div class="col-3 -add-pic-" data-key="<?=$key?>" >
+									<form class="form-dialog-content-<?=$key?>">
+									<div class="p-3 border bg-light">
+										<img src="<?=$value['link']?>" alt="" width="270px" class="-add-" style="cursor: pointer">
+									</div>
+									<input type="hidden" name="array_<?=$key?>" value='<?=$description?>'>
+									<input type="radio" name="type" value="gif" <?=($type=='gif')?'checked':''?>>gif
+									<input type="radio" name="type" value="pic" <?=($type=='pic')?'checked':''?>>pic
+									<input type="hidden" name="query_search" value="<?=htmlspecialchars($q)?>">
+									<div class="answer">&nbsp;</div>
+									</form>
+								</div>
+								<?
+							}
+							?>
+						</div>
+					<?
+				}
 			}
-		}
-		?>
-		
-		<?if(isset($_POST['addList'])){
-		  $addList = explode(';', $_POST['addList']);
-		  
-		  foreach($addList as $pic){
-			  $pic = trim($pic);
-			  $validUrl = filter_var($pic, FILTER_VALIDATE_URL);
-			  if ($validUrl){
-				  $fileInfo = new SplFileInfo($validUrl);
-				  if ($fileInfo->getExtension() == 'gif'){ $type = 'gif'; }
-				  elseif (
-						$fileInfo->getExtension() == 'jpg'  ||
-						$fileInfo->getExtension() == 'jpeg' ||
-						$fileInfo->getExtension() == 'png'  ||
-						$fileInfo->getExtension() == 'webp'
-				  ){ $type = 'pic'; }
-				  elseif ($fileInfo->getExtension() == 'mp4'){ $type = 'mov';}
-				  else{
-						$stop = true;
-				  }
-	
-				  if (!$stop){
-					  $x = Main::addImage($type, $pic, $value, 'Y');
-					  //$add = Main::addImage($type, $pic);
-					  if (intval($x)>0) {
-						  ?>
-							  <div class="col">
-								<img src="<?=$pic?>" alt="" width="100px"><br>/sendpic_<?=$x?>
-							  </div>
-						  <?
+			?>
+			
+			<?if(isset($_POST['addList'])){
+			  $addList = explode(';', $_POST['addList']);
+			  
+			  foreach($addList as $pic){
+				  $pic = trim($pic);
+				  $validUrl = filter_var($pic, FILTER_VALIDATE_URL);
+				  if ($validUrl){
+					  $fileInfo = new SplFileInfo($validUrl);
+					  if ($fileInfo->getExtension() == 'gif'){ $type = 'gif'; }
+					  elseif (
+							$fileInfo->getExtension() == 'jpg'  ||
+							$fileInfo->getExtension() == 'jpeg' ||
+							$fileInfo->getExtension() == 'png'  ||
+							$fileInfo->getExtension() == 'webp'
+					  ){ $type = 'pic'; }
+					  elseif ($fileInfo->getExtension() == 'mp4'){ $type = 'mov';}
+					  else{
+							$stop = true;
 					  }
+		
+					  if (!$stop){
+						  $x = Main::addImage($type, $pic, $value, 'Y');
+						  //$add = Main::addImage($type, $pic);
+						  if (intval($x)>0) {
+							  ?>
+								  <div class="col">
+									<img src="<?=$pic?>" alt="" width="100px"><br>/sendpic_<?=$x?>
+								  </div>
+							  <?
+						  }
+					  }
+		
 				  }
-	
 			  }
-		  }
-	}?>
+		}?>
+		</div>
 	</div>
-</div>
-<br>
-
+	<br>
+	<?nextBTN($type, $q)?>
+</section>
 
 <script>
 (() => {
@@ -179,7 +184,7 @@ use Lib\Main;
 		fetch(url,{method:'POST', body: formData})
 		.then((response)=>response.json())
 		.then((result)=>{
-			console.log(result);
+			// console.log(result);
 			if(result.status === true){
 				answer.textContent = 'ok';
 			}else{
@@ -192,8 +197,6 @@ use Lib\Main;
 
 
 </script>
-
-<?nextBTN($type, $q)?>
 
 <?php
 function nextBTN($type, $q = ''){

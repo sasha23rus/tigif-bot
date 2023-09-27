@@ -11,6 +11,9 @@ use Lib\Main;
 use my\tg;
 
 $telegram = new Api('5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE', true);
+/*$arAns = [ 'chat_id' => '153057273', 'parse_mode'=> 'HTML', 'text' => "reply"];
+$telegram->sendMessage($arAns);
+die();*/
 
 $result = $telegram->getWebhookUpdates();
 $text = $result["message"]["text"];

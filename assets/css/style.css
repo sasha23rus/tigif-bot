@@ -2,5 +2,24 @@
     max-width: 20vw;
 }
 img.media-item {
-    height: 100px; margin: 1px
+    height: 90px;
+    margin: 1px;
 }
+.outer:before {
+  content: '';
+  display: inline-block;
+  min-height: 75vh;
+  height: 100%;
+  vertical-align: middle;
+}
+
+.inner {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* добавим горизонтальное центрирование */
+.outer {
+  text-align: center;
+}
+

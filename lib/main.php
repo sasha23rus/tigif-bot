@@ -40,9 +40,6 @@
 			$result = curl_exec( $curl );
 			
 			$json = json_decode( $result, true );
-			echo "<hr>";
-			var_dump( $query );
-			echo "<hr>";
 			return $json;
 		}
 		
@@ -79,7 +76,27 @@
 				
 			}
 		}
+		public static function getRandImages( $count = '5' )
+		{
+			$result = Main::DB()->query( 'SELECT * FROM `GIF_TABLE` where `TYPE` = "PIC" AND `ACTIVE` = 1 AND `FILE_ID` != "" ORDER BY RAND() LIMIT ' . $count );
+			
+			while( $data = $result->fetchAssoc() ) {
+				$res[] = $data;
+			}
+			
+			return $res;
+		}
 		
+		public static function getRandGIFs( $count = '5' )
+		{
+			$result = Main::DB()->query( 'SELECT * FROM `GIF_TABLE` where `TYPE` = "GIF" AND `ACTIVE` = 1 AND `FILE_ID` != "" ORDER BY RAND() LIMIT ' . $count );
+			
+			while( $data = $result->fetchAssoc() ) {
+				$res[] = $data;
+			}
+			
+			return $res;
+		}
 		
 		public static function getFullStatistic()
 		{
@@ -211,27 +228,7 @@
 			return Main::DB()->query( 'SELECT * FROM `GIF_TABLE` where `URL` = "?s" LIMIT 1', $url )->getNumRows();
 		}
 		
-		public static function getRandImages( $count = '5' )
-		{
-			$result = Main::DB()->query( 'SELECT * FROM `GIF_TABLE` where `TYPE` = "PIC" AND `ACTIVE` = 1 ORDER BY RAND() LIMIT ' . $count );
-			
-			while( $data = $result->fetchAssoc() ) {
-				$res[] = $data;
-			}
-			
-			return $res;
-		}
 		
-		public static function getRandGIFs( $count = '5' )
-		{
-			$result = Main::DB()->query( 'SELECT * FROM `GIF_TABLE` where `TYPE` = "GIF" AND `ACTIVE` = 1 ORDER BY RAND() LIMIT ' . $count );
-			
-			while( $data = $result->fetchAssoc() ) {
-				$res[] = $data;
-			}
-			
-			return $res;
-		}
 		
 		public static function setViewCount( $id )
 		{
@@ -439,27 +436,27 @@
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 				<title>Ti Bot</title>
-				<!--<link rel="stylesheet"
+				<link rel="stylesheet"
 					  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 				<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
 					  integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
-					  crossorigin="anonymous">-->
+					  crossorigin="anonymous">
 				
 				
-				<link href="/assets/css/style.css" rel="stylesheet">
-<!--				<link href="/assets/css/cover.css" rel="stylesheet">-->
+				<link href="/assets/css/style.css?<?=rand()?>" rel="stylesheet">
+				<link href="/assets/css/cover.css" rel="stylesheet">
 				
 				<script
 					src="https://code.jquery.com/jquery-3.6.1.min.js"
 					integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
 					crossorigin="anonymous"></script
 			</head>
-			<body>
+			<body class="h-100 ">
 			<div class="container text-center pt-3 pb-5">
 				<div class="row align-items-start">
 					<div class="col">
 						<h3 class="row">
-							<a href="/">
+							<a href="https://t.me/tigif_bot">
 								<img src="/assets/img/logo.png" alt="tigif_bot"> TiBot @tigif bot
 							</a>
 						</h3>
@@ -501,20 +498,22 @@
 		
 		<?php endif ?>
 			
-			<div class="container text-center fixed-bottom">
-				<footer class="mastfoot mt-auto">
-					<div class="inner">
-						<p>Telegram <a href="https://t.me/tigif_bot">@tigif_bot</a></p>
+			<footer class="">
+				<div class="navbar-fixed-bottom row-fluid">
+					<div class="navbar-inner">
+						<div class="container text-center">
+							<p>Telegram <a href="https://t.me/tigif_bot">@tigif_bot</a></p>
+						</div>
 					</div>
-				</footer>
-			</div>
+				</div>
+			</footer>
 			
-			<!--<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+			<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
 					integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
 					crossorigin="anonymous"></script>
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
 					integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-					crossorigin="anonymous"></script>-->
+					crossorigin="anonymous"></script>
 			
 			</body>
 			</html>
