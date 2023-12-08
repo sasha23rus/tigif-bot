@@ -83,9 +83,11 @@ use Lib\Main;
 						<div id="result_list" class="row gy-3">
 							<?
 							foreach ($img['items'] as $key => $value) {
-								$description = json_encode($value);
-								//$description = preg_replace('"', '', $description);
-								$description = stripcslashes($description);
+								$repairValue = array();
+								foreach ($value as $kv=>$rv){
+									if($kv!='htmlTitle' && $kv!='htmlSnippet') $repairValue[$kv] = $rv;
+								}
+								$description = json_encode($repairValue);
 								?>
 								<div class="col-3 -add-pic-" data-key="<?=$key?>" >
 									<form class="form-dialog-content-<?=$key?>">

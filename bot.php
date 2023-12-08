@@ -1,5 +1,6 @@
 <?
 include_once($_SERVER["DOCUMENT_ROOT"].'/vendor/autoload.php');
+include_once($_SERVER["DOCUMENT_ROOT"].'/app/translate/en.php');
 foreach (glob( "vendor/krugozor/database/src/*.php") as $filename) {
     require_once $filename;
 }
@@ -9,6 +10,8 @@ include_once($_SERVER["DOCUMENT_ROOT"].'/lib/myTG.php');
 use Telegram\Bot\Api;
 use Lib\Main;
 use my\tg;
+
+global $_mes;
 
 $telegram = new Api('5924175794:AAG-kS9pkeulfOUAr69QoP6R2-tChx-yHXE', true);
 /*$arAns = [ 'chat_id' => '153057273', 'parse_mode'=> 'HTML', 'text' => "reply"];
@@ -173,7 +176,7 @@ if($result["callback_query"]){
                 //всплывающее сообщение
                 $telegram->answerCallbackQuery([
                     'callback_query_id' => $result["callback_query"]['id'],
-                    'text' 			=> 'Уже проголосовал',
+                    'text' 			=> $_mes['ALREADY_VOTED'],
                     'show_alert' 	=> false,
                     'cache_time' 	=> 1
                 ]);
@@ -201,14 +204,14 @@ if($result["callback_query"]){
         if ($action=='info') {
             $img = Main::getImageById($id);
             $arInfo = unserialize($img['INFO']);
-
-            $info = "Ссылка на этот контент /sendpic_".$id;
+	
+			$info = $_mes['LINK_ON_THIS_CONTENT']." /sendpic_".$id;
             if ($arInfo['title'])   $info .= "\n".$arInfo['title'];
-            if ($arInfo['link'])    $info .= "\nСсылка на оригинал ".$arInfo['link'];
+            if ($arInfo['link'])    $info .= "\n".$_mes['LINK_ON_ORIGINAL']." ".$arInfo['link'];
 			
             $telegram->answerCallbackQuery([
                 'callback_query_id' => $result["callback_query"]['id'],
-                'text' 			=> 'Поделиться /sendpic_'.$id,
+                'text' 			=> $_mes['SHARE'].' /sendpic_'.$id,
                 'show_alert' 	=> false,
                 'cache_time' 	=> 1
             ]);
@@ -297,9 +300,7 @@ if($text){
 
 	if($text == "/start"   		|| $text == "/start@tigif_bot"	|| $text == '▶') {
 	    Main::User($result["message"]["from"]); //сохраняем пользователя
-		$reply = "🔞<b>Внимание!</b>🔞\n\n";
-		$reply .= "Данный бот содержит материалы эротичесского характера, и предназначен только для лиц достигших 18 лет\nЕсли вам нету 18 пожалуйста покиньте данный бот\n\n";
-		$reply .= "<b>Ti bot</b> - это новый формат предоставления контента, пользователь теперь сам выбирает какой контент и сколько он хочет смотреть.";
+		$reply = $_mes['START_TEXT'];
 		$reply_markup = $telegram->replyKeyboardMarkup(
             [
                 'keyboard' => $keyboard,
@@ -502,7 +503,7 @@ function getIMG_send($telegram, $chat_id, $img): void
 function sendgif($telegram, $chat_id, $inlineKeyboardMarkup, $img, $pic_id, $caption = ''): void
 {
     if (!$img){
-        $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => "Закончились :("]);
+        $telegram->sendMessage(['chat_id' => $chat_id, 'parse_mode' => 'HTML', 'text' => $_mes['RAN_OUT']]);
         return;
     }
 	$result = $telegram->getWebhookUpdates();
